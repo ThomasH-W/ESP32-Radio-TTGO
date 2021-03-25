@@ -1,4 +1,8 @@
 /*
+  File : myDisplay.cpp
+  Date : 26.03.2021 
+
+  handler for display
 
 https://github.com/Bodmer/TFT_eSPI
 

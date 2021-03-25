@@ -1,4 +1,7 @@
 /*
+*  File : wiFiMgr.cpp
+*  Date : 26.03.2021 
+*
 *   Wifi Modul based on WifiManager by tzapu
 *   MQTT added
 *
@@ -37,6 +40,7 @@ MQTTClient mqtt;
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 AsyncWebServer webServer(80);
+AsyncWebSocket ws("/ws");
 
 //#include "INI_Setup_html.h"
 //#include <WebServer.h>
@@ -72,11 +76,13 @@ bool shouldSaveConfig = false;
 wifi_data_struct wifi_data;
 
 // --------------------------------------------------------------------------
+// dummy function uased a template
 void wifi_foo()
 {
 } // end of function
 
 // --------------------------------------------------------------------------
+// publish mqtt message to tele-topic
 void mqtt_pub_tele(const char *topic, const char *message)
 {
     mqtt.publish(String(mqtt_topic_tele) + "/" + topic, message);
@@ -84,6 +90,7 @@ void mqtt_pub_tele(const char *topic, const char *message)
 } // end of function
 
 // --------------------------------------------------------------------------
+// publish mqtt message to stat-topic
 void mqtt_pub_stat(const char *topic, const char *message)
 {
     mqtt.publish(String(mqtt_topic_stat) + "/" + topic, message);
@@ -91,6 +98,7 @@ void mqtt_pub_stat(const char *topic, const char *message)
 } // end of function
 
 // --------------------------------------------------------------------------
+// publish mqtt message to cmnd-topic
 void mqtt_pub_cmnd(const char *topic, const char *message)
 {
     mqtt.publish(String(mqtt_topic_cmnd) + "/" + topic, message);
@@ -98,6 +106,7 @@ void mqtt_pub_cmnd(const char *topic, const char *message)
 } // end of function
 
 // --------------------------------------------------------------------------
+// use mac address to generate a "unique" name for e.g. mqtt client name
 int32_t get_chipID()
 {
 #ifdef ESP8266
@@ -114,6 +123,7 @@ int32_t get_chipID()
 } // end of function
 
 // --------------------------------------------------------------------------
+// create full topic for standard topics: tele/cmnd/stat and subscribe
 void mqtt_set_topics() //mqtt_topic_subscribe
 {
     snprintf(mqtt_topic_tele, sizeof(mqtt_topic_tele), "%stele/%s", config.mqtt_prefix, config.mqtt_clientID);
@@ -128,7 +138,7 @@ void mqtt_set_topics() //mqtt_topic_subscribe
 } // end of function
 
 // --------------------------------------------------------------------------
-//callback notifying us of the need to save config
+// wm callback notifying us of the need to save config
 void saveConfigCallback()
 {
     serial_d_printF("wifi::saveConfigCallback> saving\n");
@@ -136,6 +146,7 @@ void saveConfigCallback()
 } // end of function
 
 // --------------------------------------------------------------------------
+// wm custom parameter
 String getParam(String name)
 {
     //read parameter from server, for customhmtl input
@@ -148,6 +159,7 @@ String getParam(String name)
 } // end of function
 
 // --------------------------------------------------------------------------
+// wm call back for custom parameter
 void saveParamCallback()
 {
     serial_d_printF("wifi::saveParamCallback> saveParamCallback fired\n");
@@ -155,6 +167,7 @@ void saveParamCallback()
 } // end of function
 
 // --------------------------------------------------------------------------
+// read config.json from littleFS
 void setup_read_fs_values()
 {
     //read configuration from FS json
@@ -215,6 +228,7 @@ void setup_read_fs_values()
 } // end of function
 
 // --------------------------------------------------------------------------
+// mqtt callback handler
 void mqtt_callback(String &topic, String &payload)
 {
     Serial.println("incoming: " + topic + " - " + payload);
@@ -249,6 +263,7 @@ void mqtt_callback(String &topic, String &payload)
 } // end of function
 
 // --------------------------------------------------------------------------
+//  connect to mqtt broker
 void mqtt_init()
 {
     bool res;
@@ -272,8 +287,6 @@ void mqtt_init()
         serial_d_printF("ERR wifi::mqtt_init> > MQTT: connection failed.\n");
 
 } // end of function
-
-
 
 // --------------------------------------------------------------------------
 void handleNotFound(AsyncWebServerRequest *request)
@@ -300,7 +313,7 @@ bool loadFromSPIFFS(AsyncWebServerRequest *request, String path)
 {
     String dataType = "text/html";
 
-    Serial.print("Requested page -> ");
+    Serial.print("loadFromSPIFFS> Requested page -> ");
     Serial.println(path);
     if (LITTLEFS.exists(path))
     {
@@ -333,10 +346,41 @@ void handleRoot(AsyncWebServerRequest *request)
     loadFromSPIFFS(request, "/index.html");
 } // end of function
 
+/*
+https://techtutorialsx.com/2018/08/14/esp32-async-http-web-server-websockets-introduction/
+
+https://techtutorialsx.com/2018/09/11/esp32-arduino-web-server-sending-data-to-javascript-client-via-websocket/
+https://techtutorialsx.com/2018/09/13/esp32-arduino-web-server-receiving-data-from-javascript-websocket-client/
+
+*/
+
+// --------------------------------------------------------------------------
+void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)
+{
+
+    if (type == WS_EVT_CONNECT)
+    {
+
+        Serial.println("Websocket client connection received");
+        client->text("Hello from ESP32 Server");
+    }
+    else if (type == WS_EVT_DISCONNECT)
+    {
+        Serial.println("Client disconnected");
+    }
+} // end of function
+
+// --------------------------------------------------------------------------
+void handleConfig(AsyncWebServerRequest *request)
+{
+    Serial.print("handleConfig> start wm.startWebPortal()");
+    wm.startWebPortal();
+}
+
 // --------------------------------------------------------------------------
 void setup_webServer()
 {
-    Serial.print(F("Inizializing FS..."));
+    Serial.print(F("setup_webServer> Inizializing FS..."));
     if (LITTLEFS.begin())
     {
         Serial.println(F("done."));
@@ -347,12 +391,17 @@ void setup_webServer()
     }
 
     webServer.on("/", handleRoot);
+    webServer.on("/config", handleConfig);
 
     webServer.on("/inline", [](AsyncWebServerRequest *request) {
         request->send(200, "text/plain", "this works as well");
     });
 
     webServer.onNotFound(handleNotFound);
+
+    ws.onEvent(onWsEvent);
+    webServer.addHandler(&ws);
+
     webServer.begin();
     Serial.println("HTTP server started");
 
@@ -390,7 +439,6 @@ void pub_wifi_info()
     mqtt_pub_tele("RSSI", wifi_data.rssiChar);
 } // end of function
 
-
 // --------------------------------------------------------------------------
 wifi_data_struct *setup_wifi_info()
 {
@@ -401,7 +449,7 @@ wifi_data_struct *setup_wifi_info()
     Serial.printf("wifi> IP address: %s\n", wifi_data.IPChar);
 
     pub_wifi_info();
-     return &wifi_data;
+    return &wifi_data;
 } // end of function
 
 // --------------------------------------------------------------------------
