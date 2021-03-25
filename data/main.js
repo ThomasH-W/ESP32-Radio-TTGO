@@ -278,8 +278,8 @@ img.addEventListener("load", () => {
 /* Station Buttons */
 /*******************/
 const onStationChange = () => {
-  // emb.send(`station_select=${station_select.value}`);
-  emb.sendJSON({ station_select: parseInt(station_select.value) });
+  emb.send(`station_select=${station_select.value}`);
+  // emb.sendJSON({ station_select: parseInt(station_select.value) });
 };
 
 const station_select = document.getElementById("station_select");
@@ -302,8 +302,8 @@ document.getElementById("back").addEventListener("click", () => {
 /* Volume Buttons */
 /******************/
 const onVolumeChange = () => {
-  // emb.send(`volume=${volume_range.value}`);
-  emb.sendJSON({ volume: parseInt(volume_range.value) });
+  emb.send(`volume=${volume_range.value}`);
+  // emb.sendJSON({ volume: parseInt(volume_range.value) });
 };
 const volume_range = document.getElementById("volume_range");
 volume_range.addEventListener("input", onVolumeChange);
@@ -320,8 +320,8 @@ const pause_play = document.getElementById("pause_play");
 pause_play.addEventListener("click", () => {
   const play = pause_play.innerText != "pause";
   playstate(play);
-  // emb.send(`playstate=${play ? "play" : "pause"}`);
-  emb.sendJSON({ playstate: play ? "play" : "pause" });
+  emb.send(`playstate=${play ? "play" : "pause"}`);
+  // emb.sendJSON({ playstate: play ? "play" : "pause" });
 });
 const playstate = (playing) => {
   pause_play.innerText = playing ? "pause" : "play_arrow";
@@ -364,7 +364,7 @@ const setMetadata = ({ artist, title }) => {
   updateTrackCover(title, artist);
 };
 
-const old_loadStations = async () => {
+const loadStations = async () => {
   const resp = await fetch("./setup.ini");
   const ini = await resp.text();
   const stations = ini.match(/RadioName = .*/g).map((s) => s.substr(12));
@@ -377,7 +377,7 @@ const old_loadStations = async () => {
   }
 };
 
-const loadStations = async () => {
+const new_loadStations = async () => {
   const resp = await fetch("./setup.json");
   const config = await resp.json();
   station_select.options.length = 0;

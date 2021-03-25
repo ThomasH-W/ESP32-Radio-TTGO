@@ -233,6 +233,16 @@ void myDisplay::Gui2(audio_data_struct *aData)
         Serial.printf("myDisplay::Gui2 drawstring >%s<\n", buf);
         myTFT.setTextDatum(MR_DATUM);     // Set datum to Middle Right
         myTFT.drawString(buf, 170, y, 8); // string, x,y, font
+
+        
+        // empty box
+        myTFT.drawLine(40, 110, 200, 110, TFT_BLUE); // xs, ys, xe,ye, color
+        myTFT.drawLine(40, 110, 200, 130, TFT_BLUE); // xs, ys, xe,ye, color
+        myTFT.drawLine(40, 110, 40, 130, TFT_BLUE); // xs, ys, xe,ye, color
+        myTFT.drawLine(200, 110, 200, 130, TFT_BLUE); // xs, ys, xe,ye, color
+
+        // fill box
+        myTFT.fillRect(41, 111, 158, 18, TFT_BLUE); // x,y ,w,h, color
     }
 
     myTFT.setTextDatum(ML_DATUM);

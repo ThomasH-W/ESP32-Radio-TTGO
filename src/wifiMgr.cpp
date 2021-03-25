@@ -40,7 +40,7 @@ MQTTClient mqtt;
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 AsyncWebServer webServer(80);
-AsyncWebSocket ws("/ws");
+AsyncWebSocket ws("/");
 
 //#include "INI_Setup_html.h"
 //#include <WebServer.h>
@@ -353,6 +353,11 @@ https://techtutorialsx.com/2018/09/11/esp32-arduino-web-server-sending-data-to-j
 https://techtutorialsx.com/2018/09/13/esp32-arduino-web-server-receiving-data-from-javascript-websocket-client/
 
 */
+// --------------------------------------------------------------------------
+void wsBroadcast()
+{
+    ws.textAll("meta_playing=Gossip@Heavy Cross");
+} // end of function
 
 // --------------------------------------------------------------------------
 void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)
@@ -363,10 +368,20 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
 
         Serial.println("Websocket client connection received");
         client->text("Hello from ESP32 Server");
+        wsBroadcast();
     }
     else if (type == WS_EVT_DISCONNECT)
     {
         Serial.println("Client disconnected");
+    }
+    else if (type == WS_EVT_DATA)
+    {
+        AwsFrameInfo *info = (AwsFrameInfo *)arg;
+        if (info->opcode == WS_TEXT)
+        {
+            data[len] = 0;
+            Serial.println((char *)data);
+        }
     }
 } // end of function
 
@@ -390,7 +405,9 @@ void setup_webServer()
         Serial.println(F("fail."));
     }
 
-    webServer.on("/", handleRoot);
+    // webServer.on("/", handleRoot);
+    webServer.serveStatic("/", LITTLEFS, "/").setDefaultFile("index.html");
+
     webServer.on("/config", handleConfig);
 
     webServer.on("/inline", [](AsyncWebServerRequest *request) {
