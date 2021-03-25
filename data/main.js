@@ -274,6 +274,10 @@ img.addEventListener("load", () => {
   );
 });
 
+img.addEventListener("error", () => {
+  img.src = "fallbackCover.jpg";
+});
+
 /*******************/
 /* Station Buttons */
 /*******************/
