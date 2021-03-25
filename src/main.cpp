@@ -1,6 +1,10 @@
 /*
+  File : main.cpp
+  Date : 26.03.2021 
+
+  ESP32 Internet Radio with Display based on TTGO
+
   ToDo:
-    ASYNC webServer
     ESP deepsleep, wakeup
     Battery
     show picture - loudspeaker
@@ -41,6 +45,7 @@ int mode = 0, oldMode = 0; // based on state
 unsigned long currentMillisLoop = 0, previousMillisDisplay = 0, intervalDisplayLoop = 3000;
 
 // --------------------------------------------------------------------------
+// set flag for updating display, will be recognized next time in displayLoop
 void main_displayUpdate(bool clearScreen)
 {
   if (audio_data_ptr)                                                       // pointer is initialized after display setup
@@ -53,6 +58,7 @@ void main_displayUpdate(bool clearScreen)
 } // end of function
 
 // ----------------------------------------------------------------------------------------
+// if not in boot mode, print message on TFT display
 void displayDebugPrint(const char *message)
 {
   if (1 > mode)
@@ -61,6 +67,7 @@ void displayDebugPrint(const char *message)
 } // end of function
 
 // ----------------------------------------------------------------------------------------
+// if not in boot mode, print message on TFT display
 void displayDebugPrintln(const char *message)
 {
   if (1 > mode)
@@ -69,6 +76,7 @@ void displayDebugPrintln(const char *message)
 } // end of function
 
 // ---------------------------------------------------------------------------------------
+// clear display, request update of current UI
 void displayReset(void)
 {
   serial_println("main::displayReset");
@@ -77,6 +85,8 @@ void displayReset(void)
 } // end of function
 
 // ---------------------------------------------------------------------------------------
+// after interval, fallback to GUI1 showing mani screen
+// if audio_data changed, flag update will be set
 void displayLoop(void)
 {
   currentMillisLoop = millis();
@@ -137,28 +147,27 @@ void setup()
   delay(50);
   serial_println("-------------------------------------------------------- wifi init th");
 
-  myDisplay1.begin();
-
+  myDisplay1.begin(); // start display
   delay(10);
   myDisplay1.println("> Boot ...");
 
-  setup_read_file();
+  setup_read_file(); // read setup
   readVoltage(); // must be done before wifi is established - conflict using ADC
 
-  // myDisplay1.Gui0(); test gui using differretn fonts, files to be loaded into SPIFFS
+  // myDisplay1.Gui0(); test gui using differrent fonts, files to be loaded into SPIFFS
 
   myDisplay1.println("> setup WiFi ...");
-  setup_wifi();
+  setup_wifi(); // call wifimanager and establish mqtt connection
   wifi_data_ptr = setup_wifi_info();
 
   myDisplay1.println("> setup audio ...");
-  audio_data_ptr = setup_audio();
+  audio_data_ptr = setup_audio(); // start audio
   mqtt_pub_tele("INFO", "setup complete");
-  list_FS();
-  setup_rotary();
+  list_FS(); // debug: show files in littlefs
+  setup_rotary(); // initialize rotary encoder
   myDisplay1.println("> setup complete");
 
-  mode = ST_GUI_1;
+  mode = ST_GUI_1; // switch to default GUI 7 main screen
 } // end of function
 
 // --------------------------------------------------------------------------

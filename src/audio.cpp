@@ -1,6 +1,8 @@
 /*
+  File : audio.cpp
+  Date : 26.03.2021 
 
-https://github.com/schreibfaul1/ESP32-audioI2S
+  Based on https://github.com/schreibfaul1/ESP32-audioI2S
 
 lib_deps = 
     https://github.com/schreibfaul1/ESP32-audioI2S
@@ -42,6 +44,9 @@ audio_data_struct au; // audio data structure
 unsigned long currentMillisAudioLoop = 0, previousMillisRotary = 0, intervalRotaryLoop = 3000;
 unsigned long previousPreSelectMillis = 0, intervalPreSelectLoop = 3000;
 //-----------------------------------------------------------------------------------------
+// when rotary encoder button is pressed, toggle mode
+// a) change volume
+// b) change station / preset
 int audio_rotary_button(void)
 {
     int rotaryPos = 0;
@@ -60,6 +65,7 @@ int audio_rotary_button(void)
 } // end of function
 
 //-----------------------------------------------------------------------------------------
+// depending on mode, change volume or station/preset
 void audio_rotary_rotation(bool dirUp)
 {
 
@@ -84,12 +90,14 @@ void audio_rotary_rotation(bool dirUp)
 } // end of function
 
 //-----------------------------------------------------------------------------------------
+// overlay if not value is being provided
 void audio_mode(int mode)
 {
     audio_mode(mode, 0);
 } // end of function
 
 //-----------------------------------------------------------------------------------------
+// used for mqtt messages to request certain actions
 void audio_mode(int mode, int value)
 {
     serial_d_printf("audio::audio_mode> %d\n", mode);
@@ -155,6 +163,8 @@ void audio_mode(int mode, int value)
 } // end of function
 
 //-----------------------------------------------------------------------------------------
+// async selection of radio station
+// in order to scroll through list of station before committing and tuning
 void station_pre_select(int stationID)
 {
     char buf[10];
@@ -188,6 +198,7 @@ void station_pre_select(int stationID)
 } // end of function
 
 //-----------------------------------------------------------------------------------------
+// once timer expires, tune to new station and remove update flag
 void station_apply_preselect(void)
 {
     if (au.radioNextStation != au.radioCurrentStation)
@@ -196,6 +207,8 @@ void station_apply_preselect(void)
 } // end of function
 
 //-----------------------------------------------------------------------------------------
+// tune to new station and populate info structure
+// in paralle push info to mqtt
 void station_select(int stationID)
 {
     char buf[10];
@@ -237,7 +250,7 @@ void station_select(int stationID)
 
         strncpy(au.radioArtist, setupRadio[stationID].RadioName, sizeof(au.radioName)); // to prevent empty screen
         strncpy(au.radioNextName, setupRadio[stationID].RadioName, sizeof(au.radioNextName));
-        audio.setVolume(0);                                                             // 0...21
+        audio.setVolume(0); // 0...21
         delay(10);
         audio.connecttohost(setupRadio[stationID].RadioURL); //  start streaming
         au.update = UP_PRESET;
@@ -361,6 +374,8 @@ void audio_eof_speech(const char *info)
     Serial.println(info);
 }
 
+// -----------------------------------------------------------------------------------------
+// debug: print GPIO config
 void setup_show_data()
 {
     serial_d_printf("P_I2S_LRCK %d\n", setupGPIO.P_I2S_LRCK);
@@ -370,6 +385,7 @@ void setup_show_data()
     serial_d_printf("P_ENC0_A %d\n", setupGPIO.P_ENC0_A);
     serial_d_printf("P_ENC0_B %d\n", setupGPIO.P_ENC0_B);
     serial_d_printf("P_ENC0_BTN %d\n", setupGPIO.P_ENC0_BTN);
+    serial_d_printf("P_ENC0_PWR %d\n", setupGPIO.P_ENC0_PWR);
 
     serial_d_printf("P_ADC_BAT %d\n", setupGPIO.P_ADC_BAT);
 
@@ -383,6 +399,7 @@ void setup_show_data()
 } // end of function
 
 // -----------------------------------------------------------------------------------------
+// read name and asign value
 void setup_use_data(int lineNo, String setupName, String setupValue)
 {
     if (setupName.indexOf("P_I2S_LRCK") >= 0)
@@ -397,6 +414,8 @@ void setup_use_data(int lineNo, String setupName, String setupValue)
     if (setupName.indexOf("P_ENC0_B") >= 0)
         setupGPIO.P_ENC0_B = setupValue.toInt();
     if (setupName.indexOf("P_ENC0_BTN") >= 0)
+        setupGPIO.P_ENC0_BTN = setupValue.toInt();
+    if (setupName.indexOf("P_ENC0_PWR") >= 0)
         setupGPIO.P_ENC0_BTN = setupValue.toInt();
 
     if (setupName.indexOf("P_ADC_BAT") >= 0)
@@ -432,6 +451,7 @@ void setup_use_data(int lineNo, String setupName, String setupValue)
 } // end of function
 
 // -----------------------------------------------------------------------------------------------
+// parse single line form config file setup.ini
 void setup_read_line(int lineNo, const char *str)
 {
     char *value; // Points to value after equal sign in command
@@ -544,6 +564,7 @@ void listDir2(fs::FS &fs, const char *dirname, uint8_t levels)
 }
 
 // -----------------------------------------------------------------------------------------------
+// read config file setup.ini from littleFS and pass every line to parser
 bool setup_read_file()
 {
     String line;  // Zeile von .ini Datei
@@ -580,6 +601,8 @@ bool setup_read_file()
 } // end of function
 
 //-------------------------------------------------------------------------------------------------------------------------------------------
+// analog read of voltage
+// Note: does only work if wifi is not active
 void readVoltage()
 {
     int vref = 1100;
@@ -589,6 +612,7 @@ void readVoltage()
 } // end of function
 
 //-------------------------------------------------------------------------------------------------------------------------------------------
+// print and publish curretn voltage
 void showVoltage()
 {
     char buf[10];
@@ -598,6 +622,7 @@ void showVoltage()
 } // end of function
 
 //-------------------------------------------------------------------------------------------------------------------------------------------
+// save current radio station so radio will tune to this statin after reboot
 void save_preferences()
 {
     preferences.begin("iotsharing", false);                       /* Start a namespace "iotsharing"in Read-Write mode */
@@ -606,6 +631,7 @@ void save_preferences()
 } // end of function
 
 //-------------------------------------------------------------------------------------------------------------------------------------------
+// retrieve last radio station before reboot
 void setup_preferences()
 {
     /* Start a namespace "iotsharing"in Read-Write mode: set second parameter to false Note: Namespace name is limited to 15 chars */
@@ -628,6 +654,7 @@ void setup_preferences()
 } // end of function
 
 //-----------------------------------------------------------------------------------------
+// set I2S aduio interface and start streaming
 audio_data_struct *setup_audio()
 {
     setup_preferences();
@@ -642,6 +669,8 @@ audio_data_struct *setup_audio()
 } // end of function
 
 //-----------------------------------------------------------------------------------------
+// standard audio loop
+// timer is used when new preset is selected by rotaray encoder
 void loop_audio()
 {
     audio.loop();

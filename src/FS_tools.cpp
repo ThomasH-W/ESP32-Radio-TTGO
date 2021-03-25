@@ -1,3 +1,9 @@
+/*
+  File : FS_tools.cpp
+  Date : 26.03.2021 
+
+  various function to deal with filesystem
+*/
 #include <Arduino.h>
 #include "FS.h"
 #include <LITTLEFS.h>
@@ -8,7 +14,7 @@
 
 #define FORMAT_LITTLEFS_IF_FAILED true
 
-void listDir(fs::FS &fs, const char *dirname, uint8_t levels)
+    void listDir(fs::FS &fs, const char *dirname, uint8_t levels)
 {
     Serial.printf("listDir::Listing directory> %s\r\n", dirname);
 

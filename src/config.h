@@ -12,6 +12,7 @@ struct SetupGPIO
     int P_ENC0_A = 255;
     int P_ENC0_B = 255;
     int P_ENC0_BTN = 255;
+    int P_ENC0_PWR = 255;
 
     int P_ADC_BAT = 255;
     int P_ADC_EN = 255;
