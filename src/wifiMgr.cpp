@@ -380,7 +380,32 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
         if (info->opcode == WS_TEXT)
         {
             data[len] = 0;
-            Serial.println((char *)data);
+            char* command = (char*) data;
+            Serial.println(command);
+            if(strncmp(command, "playstate", strlen(command)) == 0)
+            {
+                char* value = command + strlen("playstate=");
+                if(strncmp(value, "play", 4) || strncmp(value, "unmute", 6))
+                {
+                    // !IMPLEMENT_COMMAND: Start playing
+                }
+                else
+                {
+                    // !IMPLEMENT_COMMAND: Stop playing
+                }
+            }
+            if(strncmp(command, "volume", strlen(command)) == 0)
+            {
+                // okay since command is \0 terminated
+                uint8_t volume = atoi(command + strlen("volume="));
+                // !IMPLEMENT_COMMAND: Set volume to volume
+            }
+            if(strncmp(command, "station_select", strlen(command)) == 0)
+            {
+                // okay since command is \0 terminated
+                uint8_t stationId = atoi(command + strlen("station_select="));
+                // !IMPLEMENT_COMMAND: Set station to stationId
+            }
         }
     }
 } // end of function
