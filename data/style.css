@@ -1,0 +1,241 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+@property --primary-color {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #000;
+}
+
+@property --primary-color-hue {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 200;
+}
+
+:root {
+  --primary-color: hsl(var(--primary-color-hue), 100%, 40%);
+  transition: --primary-color 0.3s;
+}
+
+html {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+body {
+  color: #444;
+  min-height: 100vw;
+  background: hsl(var(--primary-color-hue), 75%, 95%);
+}
+
+p {
+  margin: 1rem;
+}
+
+button {
+  padding: 1rem;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  color: var(--primary-color);
+}
+
+button:hover {
+  background: #eee;
+}
+
+.content {
+  width: 50rem;
+  max-width: 100%;
+  margin: auto;
+  padding: 1rem;
+}
+
+.card {
+  box-shadow: 0.2rem 0.2rem 0.6rem #0002, -0.2rem -0.2rem 0.6rem #fff8;
+  border-radius: 0.5rem;
+  background: #fff;
+  overflow: hidden;
+}
+
+header {
+  background: hsl(var(--primary-color-hue), 50%, 10%);
+  color: #fff;
+}
+
+header h1 {
+  font-size: 2rem;
+  font-weight: 300;
+}
+
+main > .content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  gap: 1rem;
+}
+
+#song_meta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto 1fr;
+  grid-template-areas: "cover artist" "cover title";
+  grid-column: 1/-1;
+}
+
+#song_meta #meta_cover {
+  grid-area: cover;
+  width: 10rem;
+  max-width: 30vw;
+  height: 100%;
+  object-fit: contain;
+  background-color: hsl(var(--primary-color-hue), 50%, 10%);
+  aspect-ratio: 1/1;
+  position: relative;
+  overflow: hidden;
+}
+
+#song_meta #meta_cover[src=""]::before {
+  content: "";
+  display: block;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 0%;
+  left: 0%;
+  background-color: hsl(var(--primary-color-hue), 50%, 10%);
+}
+
+#song_meta #meta_cover[src=""]::after {
+  content: "";
+  display: block;
+  height: 2rem;
+  width: 2rem;
+  border-radius: 50%;
+  border: 0.3rem solid #fff4;
+  border-top: 0.3rem solid #fff;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  animation: loading_spinner 1s ease-in-out infinite;
+}
+
+@keyframes loading_spinner {
+  from {
+    transform: translate(-50%, -50%) rotate(0)
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(720deg)
+  }
+}
+
+#song_meta #meta_artist {
+  grid-area: artist;
+  font-size: 1.2rem;
+  margin-bottom: 0;
+}
+
+#song_meta #meta_artist:empty::before {
+  content: "\2599\259a\259c  \2597\259b  \259d\259f\2599\259a\259b";
+  /* filter: blur(.1rem) */
+}
+
+#song_meta #meta_artist:empty::before {
+  content: "Aa";
+  color: transparent;
+  background: repeating-linear-gradient(to right, #eee, #ccc, #eee);
+  display: block;
+  width: 33%;
+  background-size: 200% 200%;
+  animation: text-loading 2s linear infinite;
+  border-radius: .5rem;
+}
+
+#song_meta #meta_title {
+  grid-area: title;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+#song_meta #meta_title:empty::before {
+  content: "\259c\259f\2599\259a\259b \2599\259a\259c  \2597\259b  \259d\2599\259e\259e\259a\2599";
+  /* filter: blur(.1rem) */
+}
+
+#song_meta #meta_title:empty::before {
+  content: "Aa";
+  color: transparent;
+  background: repeating-linear-gradient(to right, #eee, #ccc, #eee);
+  display: block;
+  background-size: 200% 200%;
+  animation: text-loading 2s linear infinite;
+  border-radius: .5rem;
+}
+
+@keyframes text-loading {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: -200% 50%;
+  }
+}
+
+#media_control {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  grid-template-areas: "volume_down pause_play volume_up" "volume_range volume_range volume_range";
+  align-items: center;
+  justify-items: center;
+}
+
+#media_control #pause_play {
+  grid-area: pause_play;
+}
+
+#media_control #volume_up {
+  grid-area: volume_up;
+}
+
+#media_control #volume_down {
+  grid-area: volume_down;
+}
+
+#media_control #volume_range {
+  grid-area: volume_range;
+  width: calc(100% - 2rem);
+  padding: 1rem 0;
+  margin: 0 1rem;
+}
+
+#station {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  align-items: center;
+  justify-items: center;
+  grid-template-areas: "station_select station_select" "previous next";
+}
+
+#station #station_select {
+  grid-area: station_select;
+  align-self: stretch;
+  justify-self: stretch;
+  border: none;
+  text-align: center;
+  font-size: 1.5rem;
+  margin: 0 1rem;
+  border-bottom: 1px solid #0002;
+  background: transparent;
+}
+
+#station #back {
+  grid-area: previous;
+}
+
+#station #next {
+  grid-area: next;
+}

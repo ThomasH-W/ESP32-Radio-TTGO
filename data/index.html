@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ESP Radio</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <script src="main.js" type="module"></script>
+  </head>
+  <body>
+    <header>
+      <section class="content">
+        <h1>ESP Radio</h1>
+      </section>
+    </header>
+    <main>
+      <section class="content">
+        <section class="card" id="song_meta">
+          <img id="meta_cover" crossorigin="" src="" alt="" />
+          <p id="meta_artist"></p>
+          <p id="meta_title"></p>
+        </section>
+        <section class="card" id="station">
+          <select id="station_select">
+            <option>Loading Stations...</option>
+          </select>
+          <button class="material-icons" id="back">skip_previous</button>
+          <button class="material-icons" id="next">skip_next</button>
+        </section>
+        <section class="card" id="media_control">
+          <button class="material-icons" id="pause_play">pause</button>
+          <button class="material-icons" id="volume_down">volume_down</button>
+          <button class="material-icons" id="volume_up">volume_up</button>
+          <input type="range" min="0" max="30" id="volume_range" />
+        </section>
+      </section>
+    </main>
+  </body>
+</html>
