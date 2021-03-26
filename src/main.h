@@ -76,5 +76,7 @@ void displayReset(void);
 void displayDebugPrint(const char *message);
 void displayDebugPrintln(const char *message);
 void rotary_onButtonClick(void);
+void audio_ws_meta(void);
+void wsSendArtistTitle(char *Artist, char *SongTitle);
 
 #endif

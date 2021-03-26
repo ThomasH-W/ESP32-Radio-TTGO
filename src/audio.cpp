@@ -257,6 +257,7 @@ void station_select(int stationID)
         delay(20);
         mqtt_pub_tele("Preset", setupRadio[stationID].RadioName);
         strncpy(au.radioName, setupRadio[stationID].RadioName, sizeof(au.radioName));
+        wsSendArtistTitle(au.radioArtist, au.radioSongTitle);
 
         if (au.radioCurrentVolume == 0)
             au.radioCurrentVolume = 12;
@@ -271,6 +272,10 @@ void station_select(int stationID)
     main_displayUpdate(true);
 } // end of function
 
+void audio_ws_meta()
+{
+    wsSendArtistTitle(au.radioArtist, au.radioSongTitle);
+}
 //-----------------------------------------------------------------------------------------
 // optional - THX
 void audio_info(const char *info)
@@ -341,6 +346,8 @@ void audio_showstreamtitle(const char *info)
         Serial.println(au.radioSongTitle);
         displayDebugPrintln(au.radioSongTitle);
         mqtt_pub_tele("SongTitle", au.radioSongTitle);
+
+        wsSendArtistTitle(au.radioArtist, au.radioSongTitle);
     }
     main_displayUpdate(false);
 }

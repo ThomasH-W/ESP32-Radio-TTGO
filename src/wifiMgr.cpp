@@ -41,6 +41,7 @@ MQTTClient mqtt;
 #include <ESPAsyncWebServer.h>
 AsyncWebServer webServer(80);
 AsyncWebSocket ws("/");
+AsyncWebSocketClient *globalClient = NULL;
 
 //#include "INI_Setup_html.h"
 //#include <WebServer.h>
@@ -353,10 +354,26 @@ https://techtutorialsx.com/2018/09/11/esp32-arduino-web-server-sending-data-to-j
 https://techtutorialsx.com/2018/09/13/esp32-arduino-web-server-receiving-data-from-javascript-websocket-client/
 
 */
+
+// --------------------------------------------------------------------------
+void wsSendArtistTitle(char *Artist, char *SongTitle)
+{
+    char buf[200];
+    sprintf(buf, "meta_playing=%s@%s", Artist, SongTitle);
+
+    Serial.printf("wsSendArtistTitle> >%s<\n", buf);
+    if (globalClient) // if not null re client is connected
+    {
+        globalClient->text("sending ESP32 Stream meta data ....");
+        globalClient->text(buf);
+    }
+}
+
 // --------------------------------------------------------------------------
 void wsBroadcast()
 {
-    ws.textAll("meta_playing=Gossip@Heavy Cross");
+    audio_ws_meta();
+    //    ws.textAll("meta_playing=Thomas  + Raphael Hoeser@Heavy Cross");
 } // end of function
 
 // --------------------------------------------------------------------------
@@ -366,13 +383,16 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
     if (type == WS_EVT_CONNECT)
     {
 
-        Serial.println("Websocket client connection received");
+        Serial.println("onWsEvent> Websocket client connection received");
+        globalClient = client;
+
         client->text("Hello from ESP32 Server");
         wsBroadcast();
     }
     else if (type == WS_EVT_DISCONNECT)
     {
-        Serial.println("Client disconnected");
+        Serial.println("onWsEvent> Client disconnected");
+        globalClient = NULL;
     }
     else if (type == WS_EVT_DATA)
     {
@@ -380,31 +400,34 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
         if (info->opcode == WS_TEXT)
         {
             data[len] = 0;
-            char* command = (char*) data;
-            Serial.println(command);
-            if(strncmp(command, "playstate", strlen(command)) == 0)
+            char *command = (char *)data;
+            Serial.printf("onWsEvent> command: >%s< len: %d\n", command, strlen(command));
+            if (strncmp(command, "playstate", strlen("playstate")) == 0)
             {
-                char* value = command + strlen("playstate=");
-                if(strncmp(value, "play", 4) || strncmp(value, "unmute", 6))
+                char *value = command + strlen("playstate=");
+                if (strncmp(value, "play", 4) || strncmp(value, "unmute", 6))
                 {
-                    // !IMPLEMENT_COMMAND: Start playing
+                    audio_mode(AUDIO_MUTE);
                 }
                 else
                 {
-                    // !IMPLEMENT_COMMAND: Stop playing
+                    audio_mode(AUDIO_MUTE);
                 }
             }
-            if(strncmp(command, "volume", strlen(command)) == 0)
+            if (strncmp(command, "volume", strlen("volume")) == 0)
             {
                 // okay since command is \0 terminated
                 uint8_t volume = atoi(command + strlen("volume="));
-                // !IMPLEMENT_COMMAND: Set volume to volume
+                Serial.printf("onWsEvent> set volume to %d\n", volume);
+                audio_mode(AUDIO_VOLUME, volume);
             }
-            if(strncmp(command, "station_select", strlen(command)) == 0)
+            if (strncmp(command, "station_select", strlen("station_select")) == 0)
             {
                 // okay since command is \0 terminated
-                uint8_t stationId = atoi(command + strlen("station_select="));
-                // !IMPLEMENT_COMMAND: Set station to stationId
+                uint8_t presetNo = atoi(command + strlen("station_select="));
+                int stationID = (int)presetNo - 1;
+                Serial.printf("onWsEvent> tune to station %d [%d]\n", presetNo, stationID);
+                station_select(stationID); // tune to new station; index 0...9
             }
         }
     }
