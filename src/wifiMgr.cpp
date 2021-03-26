@@ -373,7 +373,7 @@ void wsSendArtistTitle(char *Artist, char *SongTitle)
 void wsBroadcast()
 {
     audio_ws_meta();
-    //    ws.textAll("meta_playing=Thomas  + Raphael Hoeser@Heavy Cross");
+    //    ws.textAll("meta_playing=Fettes Brot@Jein");
 } // end of function
 
 // --------------------------------------------------------------------------
