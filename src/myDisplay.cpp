@@ -242,7 +242,7 @@ void myDisplay::Gui2(audio_data_struct *aData)
 
         // fill box
         // map(value, fromLow, fromHigh, toLow, toHigh)
-        val = map(aData->radioCurrentVolume, 0, 20, 1, 158);
+        int val = map(aData->radioCurrentVolume, 0, 20, 1, 158);
         myTFT.fillRect(41, 111, val, 18, TFT_BLUE); // x,y ,w,h, color
     }
 

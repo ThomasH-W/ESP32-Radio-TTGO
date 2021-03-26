@@ -70,13 +70,15 @@ struct wifi_data_struct
 
 audio_data_struct *setup_audio(void);
 wifi_data_struct *setup_wifi_info(void);
-void pub_wifi_info(void) ;
+void pub_wifi_info(void);
 void main_displayUpdate(bool clearScreen);
 void displayReset(void);
 void displayDebugPrint(const char *message);
 void displayDebugPrintln(const char *message);
 void rotary_onButtonClick(void);
 void audio_ws_meta(void);
+void audio_ws_tuner(void);
+void wsSendTuner(int presetNo, int volume);
 void wsSendArtistTitle(char *Artist, char *SongTitle);
 
 #endif

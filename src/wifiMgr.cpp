@@ -355,11 +355,53 @@ https://techtutorialsx.com/2018/09/13/esp32-arduino-web-server-receiving-data-fr
 
 */
 
+/**
+   * Takes commands via Websocket in the form of <command>[=<argument>]:
+   *    x playstate=
+   *        x mute | pause -> playback paused
+   *        x unmute | play -> playback playing
+   *    x volume=<integer_value> -> Loudness to play
+   *    x station_select=<station_id> -> 1 indexed station to select from ini
+   *    < station_update -> Refresh Station List
+   *    < meta_playing=<artist>@<title> -> Metadata for currently playing track
+   *
+   * Legend:
+   *    < -> Incoming ESP to Website
+   *    > -> Outgoing Website to ESP
+   *    x -> Bidirectional ESP to Website and Website to ESP
+   */
+
+// wsSendTuner(au.radioCurrentStation + 1, au.radioCurrentVolume);
+// --------------------------------------------------------------------------
+void wsSendTuner(int presetNo, int volume)
+{
+    if (globalClient) // if not null re client is connected
+    {
+        char buf[200];
+        globalClient->text("sending ESP32 tuner data ....");
+
+        sprintf(buf, "station_select=%d", presetNo);
+        Serial.printf("wsSendTuner> >%s<\n", buf);
+        globalClient->text(buf);
+
+        sprintf(buf, "volume=%d", volume);
+        Serial.printf("wsSendTuner> >%s<\n", buf);
+        globalClient->text(buf);
+    }
+}
+
 // --------------------------------------------------------------------------
 void wsSendArtistTitle(char *Artist, char *SongTitle)
 {
     char buf[200];
-    sprintf(buf, "meta_playing=%s@%s", Artist, SongTitle);
+
+    int strLen = strlen(SongTitle);
+    Serial.printf("wsSendArtistTitle> SongTitle >%s< len: %d\n", SongTitle, strLen);
+
+    if (strLen)
+        sprintf(buf, "meta_playing=%s@%s", Artist, SongTitle);
+    else
+        sprintf(buf, "meta_playing=@");
 
     Serial.printf("wsSendArtistTitle> >%s<\n", buf);
     if (globalClient) // if not null re client is connected
@@ -372,8 +414,9 @@ void wsSendArtistTitle(char *Artist, char *SongTitle)
 // --------------------------------------------------------------------------
 void wsBroadcast()
 {
+    audio_ws_tuner();
     audio_ws_meta();
-    //    ws.textAll("meta_playing=Fettes Brot@Jein");
+    //    ws.textAll("meta_playing=Lauv & Troye Sivan@I'm So Tired...");
 } // end of function
 
 // --------------------------------------------------------------------------

@@ -160,6 +160,7 @@ void audio_mode(int mode, int value)
     sprintf(buf, "%d", au.radioCurrentVolume);
     mqtt_pub_tele("Volume", buf);
     main_displayUpdate(false);
+    wsSendTuner(au.radioCurrentStation + 1, au.radioCurrentVolume);
 } // end of function
 
 //-----------------------------------------------------------------------------------------
@@ -245,19 +246,28 @@ void station_select(int stationID)
         serial_d_printf("audio::station_select> au.radioArtistFirst %d\n", setupRadio[stationID].RadioArtistFirst);
         au.radioArtistFirst = setupRadio[stationID].RadioArtistFirst;
 
+        serial_d_printf("audio::station_select> presetNo %d\n", presetNo);
         sprintf(buf, "%d", presetNo);
+        serial_d_printf("audio::station_select> mqtt publish >%s<\n", buf);
         mqtt_pub_tele("PresetNo", buf);
 
         strncpy(au.radioArtist, setupRadio[stationID].RadioName, sizeof(au.radioName)); // to prevent empty screen
         strncpy(au.radioNextName, setupRadio[stationID].RadioName, sizeof(au.radioNextName));
+
+        serial_d_printf("audio::station_select> set volume (0)\n");
         audio.setVolume(0); // 0...21
         delay(10);
+        serial_d_printf("audio::station_select> URL >%s<\n", setupRadio[stationID].RadioURL);
         audio.connecttohost(setupRadio[stationID].RadioURL); //  start streaming
+        serial_d_printf("audio::station_select> conected<\n");
         au.update = UP_PRESET;
         delay(20);
+        serial_d_printf("audio::station_select> mqtt publish >%s<\n", setupRadio[stationID].RadioName);
         mqtt_pub_tele("Preset", setupRadio[stationID].RadioName);
         strncpy(au.radioName, setupRadio[stationID].RadioName, sizeof(au.radioName));
+        serial_d_printf("audio::station_select> mqtt wsSendArtistTitle %s / %s \n", au.radioArtist, au.radioSongTitle);
         wsSendArtistTitle(au.radioArtist, au.radioSongTitle);
+        wsSendTuner(au.radioCurrentStation + 1, au.radioCurrentVolume);
 
         if (au.radioCurrentVolume == 0)
             au.radioCurrentVolume = 12;
@@ -272,6 +282,29 @@ void station_select(int stationID)
     main_displayUpdate(true);
 } // end of function
 
+/**
+   * Takes commands via Websocket in the form of <command>[=<argument>]:
+   *    x playstate=
+   *        x mute | pause -> playback paused
+   *        x unmute | play -> playback playing
+   *    x volume=<integer_value> -> Loudness to play
+   *    x station_select=<station_id> -> 1 indexed station to select from ini
+   *    < station_update -> Refresh Station List
+   *    < meta_playing=<artist>@<title> -> Metadata for currently playing track
+   *
+   * Legend:
+   *    < -> Incoming ESP to Website
+   *    > -> Outgoing Website to ESP
+   *    x -> Bidirectional ESP to Website and Website to ESP
+   */
+
+//-----------------------------------------------------------------------------------------
+void audio_ws_tuner()
+{
+    wsSendTuner(au.radioCurrentStation + 1, au.radioCurrentVolume);
+}
+
+//-----------------------------------------------------------------------------------------
 void audio_ws_meta()
 {
     wsSendArtistTitle(au.radioArtist, au.radioSongTitle);
@@ -347,7 +380,7 @@ void audio_showstreamtitle(const char *info)
         displayDebugPrintln(au.radioSongTitle);
         mqtt_pub_tele("SongTitle", au.radioSongTitle);
 
-        wsSendArtistTitle(au.radioArtist, au.radioSongTitle);
+        audio_ws_meta();
     }
     main_displayUpdate(false);
 }
@@ -634,6 +667,7 @@ void save_preferences()
 {
     preferences.begin("iotsharing", false);                       /* Start a namespace "iotsharing"in Read-Write mode */
     preferences.putUInt("radioPresetNo", au.radioCurrentStation); /* Store preset to the Preferences */
+    preferences.putUInt("radioVolume", au.radioCurrentVolume);    /* Store preset to the Preferences */
     preferences.end();                                            /* Close the Preferences */
 } // end of function
 
@@ -647,7 +681,9 @@ void setup_preferences()
     /* get value of key "reset_times", if key not exist return default value 0 in second argument Note: Key name is limited to 15 chars too */
     unsigned int reset_times = preferences.getUInt("reset_times", 0);
     au.radioCurrentStation = preferences.getUInt("radioPresetNo", 0);
+    au.radioCurrentVolume = preferences.getUInt("radioVolume", 10);
     Serial.printf("audio::setup_preferences> Preset %d\n", au.radioCurrentStation);
+    Serial.printf("audio::setup_preferences> Volume %d\n", au.radioCurrentVolume);
 
     /* we have just reset ESP then increase reset_times */
     reset_times++;
