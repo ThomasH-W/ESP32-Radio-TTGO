@@ -290,7 +290,7 @@ img.addEventListener("load", () => {
 });
 
 img.addEventListener("error", () => {
-  if (img.getAttribute("src") != "") {
+  if (img.getAttribute("src")) {
     img.src = "fallbackCover.jpg";
   }
 });
@@ -368,7 +368,7 @@ const getBMID = async (title, artist) => {
 
 const getTrackCoverURL = async (title, artist) => {
   if (title === "" || artist == "") {
-    return "fallbackCover.jpg";
+    return "";
   }
   const bmids = await getBMIDs(title, artist, 5);
   for (const bmid of bmids) {
