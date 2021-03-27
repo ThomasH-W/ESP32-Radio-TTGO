@@ -352,9 +352,8 @@ const playstate = (playing) => {
 /* Load Artwork */
 /****************/
 const getBMIDs = async (title, artist, limit = 5) => {
-  const argument = encodeURIComponent(`${artist} ${title}`);
   const resp = await fetch(
-    `http://musicbrainz.org/ws/2/release/?fmt=json&limit=${limit}&query=release:${argument}`
+    `http://musicbrainz.org/ws/2/release/?fmt=json&limit=${limit}&query=artist:${encodeURIComponent(artist)} AND release:${encodeURIComponent(title)}`
   );
   const releases = await resp.json();
   const bmids = releases.releases.map((r) => r.id);
