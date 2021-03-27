@@ -314,7 +314,10 @@ void wsSendArtistTitle(char *Artist, char *SongTitle)
     Serial.printf("wifi::wsSendArtistTitle> SongTitle >%s< (len: %d) Artist >%s<\n", SongTitle, strLen, Artist);
 
     if (strLen)
+    {
         ws.printfAll_P("meta_playing=%s@%s", Artist, SongTitle);
+        getCoverBMID(Artist, SongTitle);
+    }
     else
         ws.printfAll_P("meta_playing=@");
 }
@@ -468,12 +471,14 @@ int dBmtoPercentage(int dBm)
 // --------------------------------------------------------------------------
 void pub_wifi_info()
 {
+    char buf[20];
     wifi_data.rssiLevel = dBmtoPercentage(WiFi.RSSI());
     dtostrf(wifi_data.rssiLevel, 1, 0, wifi_data.rssiChar); // 5 digits, no decimal
     Serial.printf("wifi> signal    : %s = %d dBm\n", wifi_data.rssiChar, WiFi.RSSI());
+    sprintf(buf, "%s (%d dBm)", wifi_data.rssiChar, WiFi.RSSI());
 
     mqtt_pub_tele("IP", wifi_data.IPChar);
-    mqtt_pub_tele("RSSI", wifi_data.rssiChar);
+    mqtt_pub_tele("RSSI", buf);
 } // end of function
 
 // --------------------------------------------------------------------------
@@ -649,6 +654,109 @@ void setup_wifi()
 void loop_wifi()
 {
     mqtt.loop();
+} // end of function
+
+// unsigned char specials[] = "$&+,/:;=?@ <>#%{}|\^~[]`"; /* String containing chars you want encoded */
+char specials[] = "$+,;@ <>#%{}|~[]`";
+
+static char hex_digit(char c)
+{
+    return "0123456789ABCDEF"[c & 0x0F];
+}
+
+char *urlencode(char *dst, char *src)
+{
+    char c, *d = dst;
+    while ((c = *src++))
+    {
+        if (strchr(specials, c))
+        {
+            *d++ = '%';
+            *d++ = hex_digit(c >> 4);
+            c = hex_digit(c);
+        }
+        *d++ = c;
+    }
+    *d = '\0';
+    return dst;
+}
+
+#include "HttpClient.h"
+String serverName = "http://musicbrainz.org/ws/2/release/?fmt=json&limit=1&query=release:";
+//                   http://musicbrainz.org/ws/2/release/?limit=1&query=release:Welshly%20Arms%20%20/%20Legendary
+//                   http://musicbrainz.org/ws/2/release/?fmt=json%26limit=1%26query=artist:Michael%20Patrick%20Kelly%20AND%20release:Beautiful%20Madness%20
+//                  `http://musicbrainz.org/ws/2/release/?fmt=json&limit=${limit}&query=artist:${safeArtist} AND release:${safeTitle}`
+// --------------------------------------------------------------------------
+void getCoverBMID(char *Artist, char *SongTitle)
+{
+    return;
+
+
+
+    
+    HTTPClient http;
+
+    char buf[200];
+    char serverPath[200] = "http://musicbrainz.org/ws/2/release/?fmt=json&limit=1&query=artist:";
+    strcat(serverPath, Artist);
+    strcat(serverPath, " AND release:");
+    strcat(serverPath, SongTitle);
+
+    urlencode(buf, serverPath);
+    Serial.printf("wifi::getCoverBMID> http.begin(%s)\n", buf);
+
+    http.begin(buf);
+    // http.begin("http://jsonplaceholder.typicode.com/comments?id=10");
+    // http.begin("http://musicbrainz.org/ws/2/release/?fmt=json&limit=1&query=release:Welshly%20Arms%20%20/%20Legendary");
+
+    // Send HTTP GET request
+    int httpResponseCode = http.GET();
+    Serial.printf("wifi::getCoverBMID> HTTP Response code: %d\n", httpResponseCode);
+
+    if (httpResponseCode == 200)
+    {
+        String payload = http.getString();
+        Serial.println(payload);
+        // mqtt_pub_tele("BMID",payload.c_str());
+    }
+
+    // Free resources
+    http.end();
+
+} // end of function
+
+// --------------------------------------------------------------------------
+void getCoverJPG(char *coverBMID)
+{
+    // http://coverartarchive.org/release/${bmid}/front-250.jpg`
+    // {"created":"2021-03-27T14:15:29.797Z","count":3,"offset":0,"releases":[{"id":"bcf13f43-1c36-4e67-a5f8-2c3d216112fc","score":100,
+    // "status-id":"4e304316-386d-3409-af2e-78857eec5cfe",
+    // "packaging-id":"119eba76-b343-3e02-a292-f0f00644bb9b",
+    // http://coverartarchive.org/release/119eba76-b343-3e02-a292-f0f00644bb9b/front-250.jpg
+    HTTPClient http;
+
+    char buf[200];
+    char serverPath[200] = "http: //coverartarchive.org/release/";
+    strcat(serverPath, coverBMID);
+    strcat(serverPath, "/front-250.jpg");
+
+    urlencode(buf, serverPath);
+    Serial.printf("wifi::getCoverJPG> http.begin(%s)\n", buf);
+
+    http.begin(buf);
+
+    // Send HTTP GET request
+    int httpResponseCode = http.GET();
+    Serial.printf("wifi::getCoverJPG> HTTP Response code: %d\n", httpResponseCode);
+
+    if (httpResponseCode == 200)
+    {
+        // mqtt_pub_tele("BMID",payload.c_str());
+    }
+
+    // Free resources
+    http.end();
+
 } // end of function
 
 /*

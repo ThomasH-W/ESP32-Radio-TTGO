@@ -386,6 +386,7 @@ void audio_showstreamtitle(const char *info)
         mqtt_pub_tele("SongTitle", au.radioSongTitle);
 
         audio_ws_meta();
+        
     }
     // show memory usage and publish free heap
     uint32_t freeHeap = memoryInfo();
