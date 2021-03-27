@@ -1,3 +1,5 @@
+const sleep = (n) => new Promise((resolve) => setTimeout(n, resolve));
+
 /*******************/
 /* ESP Message Bus */
 /*******************/
@@ -16,18 +18,26 @@ class ESPMessageBus {
   connect() {
     if (!this.#ws || this.#ws.readyState >= 2) {
       // WS is Closing or Closed
+      console.log("EMB: Starting Conenction");
       this.#ws = new WebSocket(this.#wsURL);
       this.#ws.addEventListener("message", (e) => this.message(e.data));
 
       this.#connection = new Promise((resolve, reject) => {
-        this.#ws.addEventListener("error", reject, {
+        const connectionRetry = async (event) => {
+          console.log("EMB: Unable to open Connection");
+          console.debug(event);
+          resolve(await this.connect());
+        };
+        this.#ws.addEventListener("error", connectionRetry, {
           once: true,
         });
         this.#ws.addEventListener("open", () => {
-          this.#ws.removeEventListener("error", reject);
+          console.log("EMB: Connection Opened");
+          this.#ws.removeEventListener("error", connectionRetry);
           this.#ws.addEventListener("error", (e) => this.connect(e.data));
           resolve(this.#ws);
         });
+        this.#ws.addEventListener("close", connectionRetry);
       });
     }
   }
@@ -158,10 +168,10 @@ class ESPMessageBus {
   }
 }
 
-const emb = new ESPMessageBus();
+// const emb = new ESPMessageBus();
 
 // for frontend testing
-// const emb = new ESPMessageBus({ wsURL: "ws://192.168.178.148" });
+const emb = new ESPMessageBus({ wsURL: "ws://192.168.178.148" });
 window.emb = emb; // do this for easy debugging
 
 /****************/
