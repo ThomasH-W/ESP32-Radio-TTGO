@@ -290,7 +290,7 @@ img.addEventListener("load", () => {
 });
 
 img.addEventListener("error", () => {
-  if(img.getAttribute("src") != ""){
+  if (img.getAttribute("src") != "") {
     img.src = "fallbackCover.jpg";
   }
 });
@@ -352,8 +352,10 @@ const playstate = (playing) => {
 /* Load Artwork */
 /****************/
 const getBMIDs = async (title, artist, limit = 5) => {
+  const safeArtist = encodeURIComponent(artist);
+  const safeTitle = encodeURIComponent(title);
   const resp = await fetch(
-    `http://musicbrainz.org/ws/2/release/?fmt=json&limit=${limit}&query=artist:${encodeURIComponent(artist)} AND release:${encodeURIComponent(title)}`
+    `http://musicbrainz.org/ws/2/release/?fmt=json&limit=${limit}&query=artist:${safeArtist} AND release:${safeTitle}`
   );
   const releases = await resp.json();
   const bmids = releases.releases.map((r) => r.id);
@@ -365,13 +367,15 @@ const getBMID = async (title, artist) => {
 };
 
 const getTrackCoverURL = async (title, artist) => {
-  // const bmid = await getBMID(title, artist);
+  if (title === "" || artist == "") {
+    return "fallbackCover.jpg";
+  }
   const bmids = await getBMIDs(title, artist, 5);
   for (const bmid of bmids) {
     const res = await fetch(
       `http://coverartarchive.org/release/${bmid}/front-250.jpg`
     );
-    if(res.ok) {
+    if (res.ok) {
       return `http://coverartarchive.org/release/${bmid}/front-250.jpg`;
     }
   }
