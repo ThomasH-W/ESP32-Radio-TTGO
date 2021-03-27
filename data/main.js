@@ -9,10 +9,7 @@ class ESPMessageBus {
    * @type {WebSocket}
    */
   #ws;
-  constructor({
-    wsURL = `ws://${window.location.host}`,
-    protocols
-  } = {}) {
+  constructor({ wsURL = `ws://${window.location.host}`, protocols } = {}) {
     this.#wsURL = wsURL;
     this.connect();
   }
@@ -24,7 +21,7 @@ class ESPMessageBus {
 
       this.#connection = new Promise((resolve, reject) => {
         this.#ws.addEventListener("error", reject, {
-          once: true
+          once: true,
         });
         this.#ws.addEventListener("open", () => {
           this.#ws.removeEventListener("error", reject);
@@ -121,7 +118,7 @@ class ESPMessageBus {
   old_handleCommand(cmd, args) {
     console.log("Hadnling Command", {
       cmd,
-      args
+      args,
     });
     switch (cmd) {
       case "playstate":
@@ -154,7 +151,7 @@ class ESPMessageBus {
         const [artist, title] = args.split("@");
         setMetadata({
           artist,
-          title
+          title,
         });
         break;
     }
@@ -164,7 +161,7 @@ class ESPMessageBus {
 const emb = new ESPMessageBus();
 
 // for frontend testing
-// const emb = new ESPMessageBus({"wsURL": "wss://echo.websocket.org"});
+// const emb = new ESPMessageBus({ wsURL: "ws://192.168.178.148" });
 window.emb = emb; // do this for easy debugging
 
 /****************/
@@ -268,14 +265,14 @@ const rgbToHsl = (r, g, b) => {
 const getMainColor = (img) => {
   const SAMPLE_RATIO = 0.33;
   const canvas = document.createElement("canvas");
-  canvas.width = 1;
-  canvas.height = 1;
+  canvas.width = 100;
+  canvas.height = 100;
   const ctx = canvas.getContext("2d");
-  const sx = img.width * (0.5 - SAMPLE_RATIO / 2);
-  const sy = img.height * (0.5 - SAMPLE_RATIO / 2);
-  const sw = img.width * SAMPLE_RATIO;
-  const sh = img.height * SAMPLE_RATIO;
-  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, 1, 1);
+  const sx = img.naturalWidth * (0.5 - SAMPLE_RATIO / 2);
+  const sy = img.naturalHeight * (0.5 - SAMPLE_RATIO / 2);
+  const sw = img.naturalWidth * SAMPLE_RATIO;
+  const sh = img.naturalHeight * SAMPLE_RATIO;
+  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, 100, 100);
   const color = ctx.getImageData(0, 0, 1, 1).data;
   const hsl = rgbToHsl(...color);
   hsl[1] = 1;
@@ -293,7 +290,9 @@ img.addEventListener("load", () => {
 });
 
 img.addEventListener("error", () => {
-  img.src = "fallbackCover.jpg";
+  if(img.getAttribute("src") != ""){
+    img.src = "fallbackCover.jpg";
+  }
 });
 
 /*******************/
@@ -352,24 +351,38 @@ const playstate = (playing) => {
 /****************/
 /* Load Artwork */
 /****************/
-const getBMID = async (title, artist) => {
+const getBMIDs = async (title, artist, limit = 5) => {
   const argument = encodeURIComponent(`${artist} ${title}`);
   const resp = await fetch(
-    `http://musicbrainz.org/ws/2/release/?fmt=json&limit=1&query=release:${argument}`
+    `http://musicbrainz.org/ws/2/release/?fmt=json&limit=${limit}&query=release:${argument}`
   );
-  const release = await resp.json();
-  const bmid = release.releases[0].id;
-  return bmid;
+  const releases = await resp.json();
+  const bmids = releases.releases.map((r) => r.id);
+  return bmids;
+};
+
+const getBMID = async (title, artist) => {
+  const bmid = await getBMIDs(title, artist, 1)[0];
 };
 
 const getTrackCoverURL = async (title, artist) => {
-  const bmid = await getBMID(title, artist);
-  return `http://coverartarchive.org/release/${bmid}/front-250.jpg`;
+  // const bmid = await getBMID(title, artist);
+  const bmids = await getBMIDs(title, artist, 5);
+  for (const bmid of bmids) {
+    const res = await fetch(
+      `http://coverartarchive.org/release/${bmid}/front-250.jpg`
+    );
+    if(res.ok) {
+      return `http://coverartarchive.org/release/${bmid}/front-250.jpg`;
+    }
+  }
+  return "fallbackCover.jpg";
 };
 
 const metaCover = document.getElementById("meta_cover");
 
 const updateTrackCover = async (title, artist) => {
+  metaCover.src = "";
   metaCover.src = await getTrackCoverURL(title, artist);
   metaCover.alt = `Coverart of ${title} from ${artist}`;
 };
@@ -380,10 +393,7 @@ const updateTrackCover = async (title, artist) => {
 const meta_artist = document.getElementById("meta_artist");
 const meta_title = document.getElementById("meta_title");
 
-const setMetadata = ({
-  artist,
-  title
-}) => {
+const setMetadata = ({ artist, title }) => {
   meta_artist.innerText = artist;
   meta_title.innerText = title;
   updateTrackCover(title, artist);
