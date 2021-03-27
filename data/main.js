@@ -9,7 +9,10 @@ class ESPMessageBus {
    * @type {WebSocket}
    */
   #ws;
-  constructor({ wsURL = `ws://${window.location.host}`, protocols } = {}) {
+  constructor({
+    wsURL = `ws://${window.location.host}`,
+    protocols
+  } = {}) {
     this.#wsURL = wsURL;
     this.connect();
   }
@@ -20,7 +23,9 @@ class ESPMessageBus {
       this.#ws.addEventListener("message", (e) => this.message(e.data));
 
       this.#connection = new Promise((resolve, reject) => {
-        this.#ws.addEventListener("error", reject, { once: true });
+        this.#ws.addEventListener("error", reject, {
+          once: true
+        });
         this.#ws.addEventListener("open", () => {
           this.#ws.removeEventListener("error", reject);
           this.#ws.addEventListener("error", (e) => this.connect(e.data));
@@ -41,6 +46,7 @@ class ESPMessageBus {
   }
 
   message(msg) {
+    msg = msg.trim().replaceAll("\0", "");
     try {
       const parsedMsg = JSON.parse(msg);
       this.handleCommand(parsedMsg);
@@ -113,8 +119,13 @@ class ESPMessageBus {
   }
 
   old_handleCommand(cmd, args) {
+    console.log("Hadnling Command", {
+      cmd,
+      args
+    });
     switch (cmd) {
       case "playstate":
+        console.log("CMD Playstate");
         switch (args) {
           case "mute":
           case "pause":
@@ -127,17 +138,24 @@ class ESPMessageBus {
         }
         break;
       case "volume":
+        console.log("CMD Volume");
         volume_range.value = args;
         break;
       case "station_select":
+        console.log("CMD Station Select");
         station_select.selectedIndex = args - 1;
         break;
       case "station_update":
+        console.log("CMD Station Update");
         loadStations();
         break;
       case "meta_playing":
+        console.log("CMD Meta Playing");
         const [artist, title] = args.split("@");
-        setMetadata({ artist, title });
+        setMetadata({
+          artist,
+          title
+        });
         break;
     }
   }
@@ -362,7 +380,10 @@ const updateTrackCover = async (title, artist) => {
 const meta_artist = document.getElementById("meta_artist");
 const meta_title = document.getElementById("meta_title");
 
-const setMetadata = ({ artist, title }) => {
+const setMetadata = ({
+  artist,
+  title
+}) => {
   meta_artist.innerText = artist;
   meta_title.innerText = title;
   updateTrackCover(title, artist);

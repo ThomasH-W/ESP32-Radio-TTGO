@@ -19,11 +19,27 @@
 #include "LITTLEFS.h" //this needs to be first, or it all crashes and burns...
 #define FORMAT_LITTLEFS_IF_FAILED true
 
-#include <ArduinoJson.h> // https://github.com/bblanchon/ArduinoJson
+#include <WiFi.h>
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+AsyncWebServer webServer(80);
+AsyncWebSocket ws("/");
+AsyncWebSocketClient *globalClient = NULL;
 
-#include <WiFiManager.h>           // https://github.com/tzapu/WiFiManager
-WiFiManager wm;                    // global wm instance
-WiFiManagerParameter custom_field; // global param ( for non blocking w params )
+// #include <ArduinoJson.h> // https://github.com/bblanchon/ArduinoJson
+
+#include <ESPAsyncWiFiManager.h> //https://github.com/tzapu/WiFiManager
+DNSServer dns;
+
+// tzapu WiFimanager
+// #include <WiFiManager.h>           // https://github.com/tzapu/WiFiManager
+// WiFiManager wm;                    // global wm instance
+// WiFiManagerParameter custom_field; // global param ( for non blocking w params )
+
+#include "Preferences.h"
+Preferences wifiPreferences; // create an instance of Preferences library
+void setup_wifi_preferences();
+void save_wifi_preferences();
 
 #include <MQTT.h>
 #define DEBUG true
@@ -36,13 +52,6 @@ WiFiServer server(80);
 WiFiClient net;
 MQTTClient mqtt;
 
-#include <WiFi.h>
-#include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
-AsyncWebServer webServer(80);
-AsyncWebSocket ws("/");
-AsyncWebSocketClient *globalClient = NULL;
-
 //#include "INI_Setup_html.h"
 //#include <WebServer.h>
 //WebServer webServer(80);
@@ -50,7 +59,7 @@ const char *setupFileName = WIFI_SETUP_FILE;
 
 const char *WifiAP_SSID = WIFI_AP_SSID;
 const char *WifiAP_PASS = WIFI_AP_PASS;
-const char *configFileName = WIFI_CONFIG_FILE;
+// const char *configFileName = WIFI_CONFIG_FILE;
 
 struct Config
 {
@@ -144,88 +153,6 @@ void saveConfigCallback()
 {
     serial_d_printF("wifi::saveConfigCallback> saving\n");
     shouldSaveConfig = true;
-} // end of function
-
-// --------------------------------------------------------------------------
-// wm custom parameter
-String getParam(String name)
-{
-    //read parameter from server, for customhmtl input
-    String value;
-    if (wm.server->hasArg(name))
-    {
-        value = wm.server->arg(name);
-    }
-    return value;
-} // end of function
-
-// --------------------------------------------------------------------------
-// wm call back for custom parameter
-void saveParamCallback()
-{
-    serial_d_printF("wifi::saveParamCallback> saveParamCallback fired\n");
-    serial_d_printf("wifi::saveParamCallback> PARAM customfieldid = %s\n", getParam("customfieldid"));
-} // end of function
-
-// --------------------------------------------------------------------------
-// read config.json from littleFS
-void setup_read_fs_values()
-{
-    //read configuration from FS json
-    serial_d_printF("wifi::setup_read_fs_values> mounting FS...\n");
-
-    if (LITTLEFS.begin(FORMAT_LITTLEFS_IF_FAILED))
-    {
-        serial_d_printF("file system mounted\n");
-        if (LITTLEFS.exists(configFileName))
-        {
-            //file exists, reading and loading
-            serial_d_printf("reading config file %s\n", configFileName);
-            File configFile = LITTLEFS.open(configFileName, "r");
-            if (configFile)
-            {
-                size_t size = configFile.size();
-                serial_d_printf("config file opened (%d bytes)\n", size);
-
-                // Allocate a temporary JsonDocument
-                // Don't forget to change the capacity to match your requirements.
-                // Use arduinojson.org/v6/assistant to compute the capacity.
-                StaticJsonDocument<512> doc;
-
-                // Deserialize the JSON document
-                DeserializationError error = deserializeJson(doc, configFile);
-                if (error)
-                    serial_d_printF("ERR wifi::setup_read_fs_values> Failed to read file, using default configuration\n");
-                else
-                {
-                    serializeJsonPretty(doc, Serial); // print json
-                    serial_d_printF("\nJSON parsed\n");
-
-                    // Copy values from the JsonDocument to the Config
-                    // config.port = doc["port"] | 2731;
-                    strlcpy(config.mqtt_server,               // <- destination
-                            doc["mqtt_server"] | MQTT_BROKER, // <- source
-                            sizeof(config.mqtt_server));      // <- destination's capacity
-                    strlcpy(config.mqtt_port,                 // <- destination
-                            doc["mqtt_port"] | MQTT_PORT,     // <- source
-                            sizeof(config.mqtt_port));        // <- destination's capacity                    config.mqtt_port = doc["mqtt_port"] | MQTT_PORT;
-
-                    strlcpy(config.mqtt_clientID,                        // <- destination
-                            doc["mqtt_clientID"] | config.mqtt_clientID, // <- source
-                            sizeof(config.mqtt_clientID));               // <- destination's capacity
-
-                    strlcpy(config.mqtt_prefix,            // <- destination
-                            doc["mqtt_prefix"] | "house/", // <- source
-                            sizeof(config.mqtt_prefix));   // <- destination's capacity
-                }                                          // DeserializationError
-            }                                              // configFile
-        }                                                  // LITTLEFS.exists
-    }                                                      // LITTLEFS.begin
-    else
-    {
-        serial_d_printF("ERR wifi::setup_read_fs_values> failed to mount filesystem\n");
-    }
-    //end read
 } // end of function
 
 // --------------------------------------------------------------------------
@@ -375,40 +302,21 @@ https://techtutorialsx.com/2018/09/13/esp32-arduino-web-server-receiving-data-fr
 // --------------------------------------------------------------------------
 void wsSendTuner(int presetNo, int volume)
 {
-    if (globalClient) // if not null re client is connected
-    {
-        char buf[200];
-        globalClient->text("sending ESP32 tuner data ....");
-
-        sprintf(buf, "station_select=%d", presetNo);
-        Serial.printf("wsSendTuner> >%s<\n", buf);
-        globalClient->text(buf);
-
-        sprintf(buf, "volume=%d", volume);
-        Serial.printf("wsSendTuner> >%s<\n", buf);
-        globalClient->text(buf);
-    }
+    Serial.printf("wifi::wsSendTuner> Preset %d , Volume %d\n", presetNo, volume);
+    ws.printfAll_P("station_select=%d", presetNo);
+    ws.printfAll_P("volume=%d", volume);
 }
 
 // --------------------------------------------------------------------------
 void wsSendArtistTitle(char *Artist, char *SongTitle)
 {
-    char buf[200];
-
     int strLen = strlen(SongTitle);
-    Serial.printf("wsSendArtistTitle> SongTitle >%s< len: %d\n", SongTitle, strLen);
+    Serial.printf("wifi::wsSendArtistTitle> SongTitle >%s< (len: %d) Artist >%s<\n", SongTitle, strLen, Artist);
 
     if (strLen)
-        sprintf(buf, "meta_playing=%s@%s", Artist, SongTitle);
+        ws.printfAll_P("meta_playing=%s@%s", Artist, SongTitle);
     else
-        sprintf(buf, "meta_playing=@");
-
-    Serial.printf("wsSendArtistTitle> >%s<\n", buf);
-    if (globalClient) // if not null re client is connected
-    {
-        globalClient->text("sending ESP32 Stream meta data ....");
-        globalClient->text(buf);
-    }
+        ws.printfAll_P("meta_playing=@");
 }
 
 // --------------------------------------------------------------------------
@@ -427,15 +335,12 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
     {
 
         Serial.println("onWsEvent> Websocket client connection received");
-        globalClient = client;
-
         client->text("Hello from ESP32 Server");
         wsBroadcast();
     }
     else if (type == WS_EVT_DISCONNECT)
     {
         Serial.println("onWsEvent> Client disconnected");
-        globalClient = NULL;
     }
     else if (type == WS_EVT_DATA)
     {
@@ -479,8 +384,8 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
 // --------------------------------------------------------------------------
 void handleConfig(AsyncWebServerRequest *request)
 {
-    Serial.print("handleConfig> start wm.startWebPortal()");
-    wm.startWebPortal();
+    Serial.print("DUMMY handleConfig> start wifiManager.startWebPortal()");
+    // wifiManager.startWebPortal();
 }
 
 // --------------------------------------------------------------------------
@@ -513,6 +418,30 @@ void setup_webServer()
     webServer.begin();
     Serial.println("HTTP server started");
 
+} // end of function
+
+// ----------------------------------------------------------------------------------------
+uint32_t memoryInfo()
+{
+    Serial.printf("\n\n-------------------------------- Get Systrm Info------------------------------------------\n");
+    //Get IDF version
+    Serial.printf("     SDK version:%s\n", esp_get_idf_version());
+    //Get chip available memory
+    Serial.printf("     esp_get_free_heap_size : %d  \n", esp_get_free_heap_size());
+    //Get the smallest memory that has never been used
+    Serial.printf("     esp_get_minimum_free_heap_size : %d  \n", esp_get_minimum_free_heap_size());
+
+    // ESP.getFreeHeap();
+
+    char temp[200];
+    sprintf(temp, "Heap: Free:%i, Min:%i, Size:%i, Alloc:%i\n", ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getHeapSize(), ESP.getMaxAllocHeap());
+    Serial.print(temp);
+
+    //Get the memory distribution of the chip, see the structure flash_size_map for the return value
+    // printf("     system_get_flash_size_map(): %d \n", system_get_flash_size_map());
+
+    uint32_t freeHeap = esp_get_free_heap_size();
+    return freeHeap;
 } // end of function
 
 // ----------------------------------------------------------------------------------------
@@ -560,66 +489,124 @@ wifi_data_struct *setup_wifi_info()
     return &wifi_data;
 } // end of function
 
+/*
+struct Config
+{
+    char mqtt_clientID[25] = MQTT_CLIENTID;
+    char mqtt_server[15] = MQTT_BROKER;
+    char mqtt_port[8] = MQTT_PORT;
+    char mqtt_user[20] = "";
+    char mqtt_password[20] = "";
+    char mqtt_prefix[20] = "house/";
+};
+Config config;
+*/
+
+//-------------------------------------------------------------------------------------------------------------------------------------------
+// save current radio station so radio will tune to this statin after reboot
+void save_wifi_preferences()
+{
+    wifiPreferences.begin("iotsharing", false); /* Start a namespace "iotsharing"in Read-Write mode */
+
+    wifiPreferences.putString("mqtt_clientID", config.mqtt_clientID); /* Store preset to the Preferences */
+    wifiPreferences.putString("mqtt_server", config.mqtt_server);     /* Store preset to the Preferences */
+    wifiPreferences.putString("mqtt_port", config.mqtt_port);         /* Store preset to the Preferences */
+    wifiPreferences.putString("mqtt_prefix", config.mqtt_prefix);     /* Store preset to the Preferences */
+
+    Serial.printf("wifi::setup_wifi_preferences> mqtt_clientID %s\n", config.mqtt_clientID);
+    Serial.printf("wifi::setup_wifi_preferences> mqtt_server   %s\n", config.mqtt_server);
+    Serial.printf("wifi::setup_wifi_preferences> mqtt_port     %s\n", config.mqtt_port);
+    Serial.printf("wifi::setup_wifi_preferences> mqtt_prefix   %s\n", config.mqtt_prefix);
+
+    wifiPreferences.end(); /* Close the Preferences */
+} // end of function
+
+//-------------------------------------------------------------------------------------------------------------------------------------------
+// retrieve last radio station before reboot
+void setup_wifi_preferences()
+{
+    /* Start a namespace "iotsharing"in Read-Write mode: set second parameter to false Note: Namespace name is limited to 15 chars */
+    wifiPreferences.begin("iotsharing", false);
+
+    /* get value of key "mqtt_clientID", if key not exist return default value  in second argument Note: Key name is limited to 15 chars too */
+
+    strncpy(config.mqtt_clientID, wifiPreferences.getString("mqtt_clientID", MQTT_CLIENTID).c_str(), sizeof(config.mqtt_clientID));
+    strncpy(config.mqtt_server, wifiPreferences.getString("mqtt_server", MQTT_BROKER).c_str(), sizeof(config.mqtt_server));
+    strncpy(config.mqtt_port, wifiPreferences.getString("mqtt_port", MQTT_PORT).c_str(), sizeof(config.mqtt_port));
+    strncpy(config.mqtt_prefix, wifiPreferences.getString("mqtt_prefix", "house/").c_str(), sizeof(config.mqtt_prefix));
+
+    Serial.printf("wifi::setup_wifi_preferences> mqtt_clientID %s\n", config.mqtt_clientID);
+    Serial.printf("wifi::setup_wifi_preferences> mqtt_server   %s\n", config.mqtt_server);
+    Serial.printf("wifi::setup_wifi_preferences> mqtt_port     %s\n", config.mqtt_port);
+    Serial.printf("wifi::setup_wifi_preferences> mqtt_prefix   %s\n", config.mqtt_prefix);
+
+    /* Close the Preferences */
+    wifiPreferences.end();
+} // end of function
+
 // --------------------------------------------------------------------------
 void setup_wifi()
 {
     snprintf(config.mqtt_clientID, sizeof(config.mqtt_clientID), "ESP32_%d", get_chipID());
     serial_d_printf("wifi::setup_wifi> default clientID: %s\n", config.mqtt_clientID);
 
-    setup_read_fs_values();
+    // setup_read_fs_values();
+    setup_wifi_preferences();
 
     WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
 
     // for testing
-    // wm.resetSettings(); // wipe settings
+    // wifiManager.resetSettings(); // wipe settings
+
+    AsyncWiFiManager wifiManager(&webServer, &dns);
 
     //set config save notify callback
-    wm.setSaveConfigCallback(saveConfigCallback);
+    wifiManager.setSaveConfigCallback(saveConfigCallback);
 
-    WiFiManagerParameter custom_mqtt_server("server", "mqtt server", config.mqtt_server, sizeof(config.mqtt_server));
-    WiFiManagerParameter custom_mqtt_port("port", "mqtt port", config.mqtt_port, sizeof(config.mqtt_port));
+    AsyncWiFiManagerParameter custom_mqtt_server("server", "mqtt server", config.mqtt_server, sizeof(config.mqtt_server));
+    AsyncWiFiManagerParameter custom_mqtt_port("port", "mqtt port", config.mqtt_port, sizeof(config.mqtt_port));
     // WiFiManagerParameter custom_mqtt_user("user", "mqtt user", mqtt_user, sizeof(mqtt_user));
     // WiFiManagerParameter custom_mqtt_password("password", "mqtt password", mqtt_password, sizeof(mqtt_password));
-    WiFiManagerParameter custom_mqtt_clientID("clientID", "mqtt client ID", config.mqtt_clientID, sizeof(config.mqtt_clientID));
-    WiFiManagerParameter custom_mqtt_prefix("prefix", "mqtt topic prefix", config.mqtt_prefix, sizeof(config.mqtt_prefix));
+    AsyncWiFiManagerParameter custom_mqtt_clientID("clientID", "mqtt client ID", config.mqtt_clientID, sizeof(config.mqtt_clientID));
+    AsyncWiFiManagerParameter custom_mqtt_prefix("prefix", "mqtt topic prefix", config.mqtt_prefix, sizeof(config.mqtt_prefix));
     // config.mqtt_topic_prefix
 
     //add all your parameters here
-    wm.addParameter(&custom_mqtt_server);
-    wm.addParameter(&custom_mqtt_port);
-    // wm.addParameter(&custom_mqtt_user);
-    // wm.addParameter(&custom_mqtt_password);
-    wm.addParameter(&custom_mqtt_clientID);
-    wm.addParameter(&custom_mqtt_prefix);
+    wifiManager.addParameter(&custom_mqtt_server);
+    wifiManager.addParameter(&custom_mqtt_port);
+    // wifiManager.addParameter(&custom_mqtt_user);
+    // wifiManager.addParameter(&custom_mqtt_password);
+    wifiManager.addParameter(&custom_mqtt_clientID);
+    wifiManager.addParameter(&custom_mqtt_prefix);
 
     /*
     // int customFieldLength = 40;
     // test custom html(radio)
     const char *custom_radio_str = "<br/><label for='customfieldid'>Custom Field Label</label><input type='radio' name='customfieldid' value='1' checked> One<br><input type='radio' name='customfieldid' value='2'> Two<br><input type='radio' name='customfieldid' value='3'> Three";
     new (&custom_field) WiFiManagerParameter(custom_radio_str); // custom html input
-    wm.addParameter(&custom_field);
-    wm.setSaveParamsCallback(saveParamCallback);
+    wifiManager.addParameter(&custom_field);
+    wifiManager.setSaveParamsCallback(saveParamCallback);
     */
 
     // set dark theme
-    wm.setClass("invert");
+    // wifiManager.setClass("invert");
 
     //set static ip
-    // wm.setSTAStaticIPConfig(IPAddress(192,168,178,254), IPAddress(192,168,178,1), IPAddress(255,255,255,0)); // set static ip,gw,sn
-    // wm.setShowStaticFields(true); // force show static ip fields
+    // wifiManager.setSTAStaticIPConfig(IPAddress(192,168,178,254), IPAddress(192,168,178,1), IPAddress(255,255,255,0)); // set static ip,gw,sn
+    // wifiManager.setShowStaticFields(true); // force show static ip fields
 
     // Automatically connect using saved credentials,
     // if connection fails, it starts an access point with the specified name ( "AutoConnectAP"),
-    // if empty will auto generate SSID, if password is blank it will be anonymous AP (wm.autoConnect())
+    // if empty will auto generate SSID, if password is blank it will be anonymous AP (wifiManager.autoConnect())
     // then goes into a blocking loop awaiting configuration and will return success result
 
-    wm.setConnectTimeout(5); // in seconds
-    wm.setConnectRetries(3); // default 1
+    wifiManager.setConnectTimeout(5); // in seconds
+    // wifiManager.setConnectRetries(3); // default 1
 
     bool res;
-    // res = wm.autoConnect(); // auto generated AP name from chipid
-    // res = wm.autoConnect("AutoConnectAP"); // anonymous ap
-    res = wm.autoConnect(WifiAP_SSID, WifiAP_PASS); // password protected ap
+    // res = wifiManager.autoConnect(); // auto generated AP name from chipid
+    // res = wifiManager.autoConnect("AutoConnectAP"); // anonymous ap
+    res = wifiManager.autoConnect(WifiAP_SSID, WifiAP_PASS); // password protected ap
 
     if (!res)
     {
@@ -649,42 +636,13 @@ void setup_wifi()
     if (shouldSaveConfig)
     {
         serial_d_printF("wifi::setup_wifi> >  saving config\n");
-
-        LITTLEFS.format(); // weiss nicht, ob das nötig ist, schadet aber nicht.
-        File configFile = LITTLEFS.open(configFileName, "w");
-        if (!configFile)
-        {
-            serial_d_printf("wifi::setup_wifi> failed to open config file %s for writing\n", configFileName);
-        }
-        else
-        {
-            // Allocate a temporary JsonDocument
-            // Don't forget to change the capacity to match your requirements.
-            // Use arduinojson.org/assistant to compute the capacity.
-            StaticJsonDocument<256> doc;
-
-            // Set the values in the document
-            doc["mqtt_server"] = custom_mqtt_server.getValue();
-            doc["mqtt_port"] = custom_mqtt_port.getValue();
-            doc["mqtt_clientID"] = custom_mqtt_clientID.getValue();
-            doc["mqtt_prefix"] = custom_mqtt_prefix.getValue();
-
-            // Serialize JSON to file
-            if (serializeJson(doc, configFile) == 0)
-            {
-                serial_d_printF("wifi::setup_wifi> >  Failed to write to file\n");
-            }
-            configFile.close();
-            serial_d_printf("wifi::setup_wifi> mqtt_clientID  : %s (saved to config file)\n", config.mqtt_clientID);
-        }
-
-        //end save
-
+        save_wifi_preferences();
         shouldSaveConfig = false;
     }
 
     mqtt_init();
     setup_webServer();
+    memoryInfo();
 } // end of function
 
 // --------------------------------------------------------------------------
@@ -692,3 +650,26 @@ void loop_wifi()
 {
     mqtt.loop();
 } // end of function
+
+/*
+
+https://musicbrainz.org/doc/Cover_Art_Archive/API
+
+const getBMID = async(title, artist) = >
+{
+    const argument = encodeURIComponent(`${artist} $ { title }`);
+    const resp = await fetch(
+    `http
+        : //musicbrainz.org/ws/2/release/?fmt=json&limit=1&query=release:${argument}`
+    );
+    const release = await resp.json();
+    const bmid = release.releases[0].id;
+    return bmid;
+};
+
+const getTrackCoverURL = async(title, artist) = >
+{
+    const bmid = await getBMID(title, artist);
+    return `http: //coverartarchive.org/release/${bmid}/front-250.jpg`;
+};
+*/

@@ -19,7 +19,8 @@ const char *setupFileName2 = WIFI_SETUP_FILE;
 
 #include "Preferences.h"
 Preferences preferences; // create an instance of Preferences library
-void save_preferences();
+void setup_audio_preferences();
+void save_audio_preferences();
 
 #include "FS.h"
 #include "LITTLEFS.h" //this needs to be first, or it all crashes and burns...
@@ -212,7 +213,7 @@ void station_apply_preselect(void)
 // in paralle push info to mqtt
 void station_select(int stationID)
 {
-    char buf[10];
+    char buf[20];
     int presetNo;
 
     presetNo = stationID + 1; // array index 0...9; preset 1...10
@@ -231,7 +232,7 @@ void station_select(int stationID)
         serial_d_printf("audio::station_select> Preset %d : %s\n", presetNo, setupRadio[stationID].RadioURL);
         au.radioCurrentStation = stationID;
         au.radioNextStation = stationID;
-        save_preferences();
+        save_audio_preferences();
 
         mqtt_pub_tele("Station", "");
         mqtt_pub_tele("Title", "");
@@ -254,6 +255,10 @@ void station_select(int stationID)
         strncpy(au.radioArtist, setupRadio[stationID].RadioName, sizeof(au.radioName)); // to prevent empty screen
         strncpy(au.radioNextName, setupRadio[stationID].RadioName, sizeof(au.radioNextName));
 
+        uint32_t freeHeap = memoryInfo();
+        sprintf(buf, "%u", freeHeap);
+        mqtt_pub_tele("MemoryHeap", buf);
+
         serial_d_printf("audio::station_select> set volume (0)\n");
         audio.setVolume(0); // 0...21
         delay(10);
@@ -270,7 +275,7 @@ void station_select(int stationID)
         wsSendTuner(au.radioCurrentStation + 1, au.radioCurrentVolume);
 
         if (au.radioCurrentVolume == 0)
-            au.radioCurrentVolume = 12;
+            au.radioCurrentVolume = AUDIO_DEFAULT_VOLUME;
         if (au.radioMute == true)
             au.radioMute = false;
         audio.setVolume(au.radioCurrentVolume); // 0...21
@@ -313,7 +318,7 @@ void audio_ws_meta()
 // optional - THX
 void audio_info(const char *info)
 {
-    char buf[10];
+    char buf[20];
     Serial.print("info        ");
     Serial.println(info);
     if (strncmp(info, "BitRate", 6) == 0)
@@ -350,7 +355,7 @@ void audio_showstreamtitle(const char *info)
     // Serial.println(au.radioTitle);
     mqtt_pub_tele("Title", info);
 
-    char buf[2] = ";";
+    char buf[20] = ";";
     buf[0] = au.radioTitleSeperator;
     mqtt_pub_tele("TitleSep", buf);
     char *posSlash = strchr(info, au.radioTitleSeperator);
@@ -382,6 +387,13 @@ void audio_showstreamtitle(const char *info)
 
         audio_ws_meta();
     }
+    // show memory usage and publish free heap
+    uint32_t freeHeap = memoryInfo();
+    sprintf(buf, "%u", freeHeap);
+    // sprintf(buf, "%u", ESP.getFreeHeap());
+    // Serial.printf("ESP free Heap() %s\n",buf);
+    mqtt_pub_tele("MemoryHeap", buf);
+
     main_displayUpdate(false);
 }
 void audio_bitrate(const char *info)
@@ -663,7 +675,7 @@ void showVoltage()
 
 //-------------------------------------------------------------------------------------------------------------------------------------------
 // save current radio station so radio will tune to this statin after reboot
-void save_preferences()
+void save_audio_preferences()
 {
     preferences.begin("iotsharing", false);                       /* Start a namespace "iotsharing"in Read-Write mode */
     preferences.putUInt("radioPresetNo", au.radioCurrentStation); /* Store preset to the Preferences */
@@ -673,7 +685,7 @@ void save_preferences()
 
 //-------------------------------------------------------------------------------------------------------------------------------------------
 // retrieve last radio station before reboot
-void setup_preferences()
+void setup_audio_preferences()
 {
     /* Start a namespace "iotsharing"in Read-Write mode: set second parameter to false Note: Namespace name is limited to 15 chars */
     preferences.begin("iotsharing", false);
@@ -700,7 +712,7 @@ void setup_preferences()
 // set I2S aduio interface and start streaming
 audio_data_struct *setup_audio()
 {
-    setup_preferences();
+    setup_audio_preferences();
 
     Serial.println("setup_audio> begin");
     mqtt_pub_tele("Station", "");

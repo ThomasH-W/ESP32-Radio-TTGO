@@ -29,7 +29,7 @@ struct SetupRadio
 // --------------------- wifi config
 #define WIFI_AP_SSID "ESP32-AP"
 #define WIFI_AP_PASS "password"
-#define WIFI_CONFIG_FILE "/config.json"
+//#define WIFI_CONFIG_FILE "/config.json"
 
 #define MQTT_CLIENTID "ESP32_6666"
 #define MQTT_BROKER "192.168.178.20"

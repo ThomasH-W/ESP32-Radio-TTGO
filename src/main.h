@@ -80,5 +80,6 @@ void audio_ws_meta(void);
 void audio_ws_tuner(void);
 void wsSendTuner(int presetNo, int volume);
 void wsSendArtistTitle(char *Artist, char *SongTitle);
+uint32_t memoryInfo();
 
 #endif

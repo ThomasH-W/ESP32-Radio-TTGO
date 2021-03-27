@@ -189,8 +189,10 @@ void myDisplay::Gui1(audio_data_struct *aData, wifi_data_struct *wData)
 
     if (aData->radioMute)
     {
+        myTFT.setTextColor(TFT_RED, TFT_BLACK);
         myTFT.drawString("mute   ", 2, 120, 2); // string, x,y, font
         // https://github.com/Bodmer/TFT_eSPI/blob/master/examples/Generic/ESP32_SDcard_jpeg/ESP32_SDcard_jpeg.ino
+        myTFT.setTextColor(TFT_WHITE, TFT_BLACK);
     }
     else
     {
@@ -236,7 +238,7 @@ void myDisplay::Gui2(audio_data_struct *aData)
 
         // empty box
         myTFT.drawLine(40, 110, 200, 110, TFT_BLUE);  // xs, ys, xe,ye, color
-        myTFT.drawLine(40, 110, 200, 130, TFT_BLUE);  // xs, ys, xe,ye, color
+        myTFT.drawLine(40, 130, 200, 130, TFT_BLUE);  // xs, ys, xe,ye, color
         myTFT.drawLine(40, 110, 40, 130, TFT_BLUE);   // xs, ys, xe,ye, color
         myTFT.drawLine(200, 110, 200, 130, TFT_BLUE); // xs, ys, xe,ye, color
 
