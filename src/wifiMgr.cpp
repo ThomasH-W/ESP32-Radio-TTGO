@@ -648,6 +648,7 @@ void setup_wifi()
     mqtt_init();
     setup_webServer();
     memoryInfo();
+    mqtt_pub_tele("Firmware", FIRMWARE_VERSION);
 } // end of function
 
 // --------------------------------------------------------------------------

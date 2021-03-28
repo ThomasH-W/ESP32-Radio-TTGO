@@ -154,6 +154,8 @@ void setup()
   setup_read_file(); // read setup
   readVoltage(); // must be done before wifi is established - conflict using ADC
 
+  myDisplay1.print("> Firmware ");
+  myDisplay1.println(FIRMWARE_VERSION);
   // myDisplay1.Gui0(); test gui using differrent fonts, files to be loaded into SPIFFS
 
   myDisplay1.println("> setup WiFi ...");

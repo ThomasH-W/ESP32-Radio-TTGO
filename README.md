@@ -17,9 +17,14 @@ In addition there is a webserver including song covers as well as mqtt to allow 
 ![Display-Default](README/images/ESP_Radio_Display-3.jpg)
 
 #### Select radio station
+Selecting a new radio station is done async. I.e. you can scroll up and down in the list without delay but tuning to the new station will happen after 3 seconds.
+
 ![Display-Station](README/images/ESP_Radio_Display-2.jpg) 
 
 #### Change Volume
+When you turn the rotary encoder, the display is showing the volume.
+After 3 secinds the display will revert back to the default screen.
+
 ![Display-Volume](README/images/ESP_Radio_Display-1.jpg)
 
 ### Webserver
@@ -41,7 +46,7 @@ Upon first boot, the wifi  manager will start and ask for wifi credentials as we
 
 | Token               | Comment    |
 | :----------         | :----- |
-| RadioName           | A short name to be shown onthe display |
+| RadioName           | A short name to be shown on the display |
 | RadioURL            | url of the mp3 stream |
 | RadioTitleSeperator | Some stations are using '/' or '-' to split artist and title |
 | RadioTitleFirst     | Indicate if order is Title/Artist or Artist/Title |
@@ -62,6 +67,7 @@ The PCM5102 is using the I2S interface.
 | P_I2S_BCLK  | Pin 26 |
 | P_I2S_DATA  | Pin 22 |
 
+![PCM5102](README/images/ESP_Radio_PCM5102.jpg)
 
 In addition you need to connect the following pins:
 
@@ -125,4 +131,5 @@ Maintain your favorite radio stations (see above) in data/setup.ini
 ### Build Filesystem and Upload Filesystem Image
 Open the PlatformIO Menu on the top left and perform both steps.
 Note: you may need to unplug/plugin your ESP to upload the image
+
 ![PIO-Upload](README/images/ESP_Radio_PlatformIO_FS_1.jpg)
