@@ -23,11 +23,11 @@ In addition there is a webserver including song covers as well as mqtt to allow 
 ![Display-Volume](README/images/ESP_Radio_Display-1.jpg)
 
 ### Webserver
-![webserver](README/images/ESP_Radio_WEB.jpg)
+![webserver](README/images/ESP_Radio_WEB_1.jpg)
 ### MQTT
-![MQTT](README/images/ESP_Radio_MQTT.jpg)
+![MQTT](README/images/ESP_Radio_MQTT_1.jpg)
 ### Node-RED
-![node-RED](README/images/ESP_Radio_NodeRed.jpg)
+![node-RED](README/images/ESP_Radio_NodeRed_1.jpg)
 
 ## Setup
 ### WiFi Manager
