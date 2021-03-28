@@ -80,9 +80,6 @@ char mqtt_topic_subscribe[50] = "";
 //flag for saving data
 bool shouldSaveConfig = false;
 
-#include "audioConfig.h"
-//audio_mode_t audioMode2;
-
 wifi_data_struct wifi_data;
 
 // --------------------------------------------------------------------------
@@ -407,6 +404,9 @@ void setup_webServer()
     // webServer.on("/", handleRoot);
     webServer.serveStatic("/", LITTLEFS, "/").setDefaultFile("index.html");
 
+    webServer.serveStatic("/radio", LITTLEFS, "/").setDefaultFile("radio.html");
+
+
     webServer.on("/config", handleConfig);
 
     webServer.on("/inline", [](AsyncWebServerRequest *request) {
@@ -426,15 +426,13 @@ void setup_webServer()
 // ----------------------------------------------------------------------------------------
 uint32_t memoryInfo()
 {
-    Serial.printf("\n\n-------------------------------- Get Systrm Info------------------------------------------\n");
+    Serial.printf("\n-------------------------------- Get System Info------------------------------------------\n");
     //Get IDF version
-    Serial.printf("     SDK version:%s\n", esp_get_idf_version());
+    // Serial.printf("     SDK version:%s\n", esp_get_idf_version());
     //Get chip available memory
-    Serial.printf("     esp_get_free_heap_size : %d  \n", esp_get_free_heap_size());
+    // Serial.printf("     esp_get_free_heap_size : %d  \n", esp_get_free_heap_size());
     //Get the smallest memory that has never been used
-    Serial.printf("     esp_get_minimum_free_heap_size : %d  \n", esp_get_minimum_free_heap_size());
-
-    // ESP.getFreeHeap();
+    // Serial.printf("     esp_get_minimum_free_heap_size : %d  \n", esp_get_minimum_free_heap_size());
 
     char temp[200];
     sprintf(temp, "Heap: Free:%i, Min:%i, Size:%i, Alloc:%i\n", ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getHeapSize(), ESP.getMaxAllocHeap());
@@ -443,7 +441,8 @@ uint32_t memoryInfo()
     //Get the memory distribution of the chip, see the structure flash_size_map for the return value
     // printf("     system_get_flash_size_map(): %d \n", system_get_flash_size_map());
 
-    uint32_t freeHeap = esp_get_free_heap_size();
+    // uint32_t freeHeap = esp_get_free_heap_size();
+    uint32_t freeHeap = ESP.getFreeHeap();
     return freeHeap;
 } // end of function
 
@@ -693,7 +692,7 @@ void getCoverBMID(char *Artist, char *SongTitle)
 
 
 
-    
+
     HTTPClient http;
 
     char buf[200];

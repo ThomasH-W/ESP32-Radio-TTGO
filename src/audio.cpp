@@ -33,9 +33,6 @@ int used_radio_stations = 0;
 #include "Audio.h"
 Audio audio;
 
-#include "audioConfig.h"
-//audio_mode_t audioMode;
-
 #include "esp_adc_cal.h"
 float battery_voltage = 0;
 
@@ -218,6 +215,7 @@ void station_select(int stationID)
 
     presetNo = stationID + 1; // array index 0...9; preset 1...10
 
+    serial_d_printf("\n-------------------------------- Staion Select ------------------------------------------\n");
     serial_d_printf("audio::station_select> requested preset %d of %d\n", presetNo, used_radio_stations);
 
     if (stationID < 0)
@@ -386,7 +384,7 @@ void audio_showstreamtitle(const char *info)
         mqtt_pub_tele("SongTitle", au.radioSongTitle);
 
         audio_ws_meta();
-        
+
     }
     // show memory usage and publish free heap
     uint32_t freeHeap = memoryInfo();

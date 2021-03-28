@@ -76,12 +76,18 @@ void displayReset(void);
 void displayDebugPrint(const char *message);
 void displayDebugPrintln(const char *message);
 void rotary_onButtonClick(void);
-void audio_ws_meta(void);
-void audio_ws_tuner(void);
 void wsSendTuner(int presetNo, int volume);
 void wsSendArtistTitle(char *Artist, char *SongTitle);
 uint32_t memoryInfo();
 void getCoverBMID(char *Artist, char *SongTitle);
 void getCoverJPG(char *coverBMID);
+
+// audio.cpp
+void station_pre_select(int stationID);
+void station_select(int presetID);
+void audio_mode(int mode);
+void audio_mode(int mode, int value);
+void audio_ws_meta(void);
+void audio_ws_tuner(void);
 
 #endif
