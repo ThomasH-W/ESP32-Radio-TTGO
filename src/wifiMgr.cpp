@@ -31,6 +31,7 @@ AsyncWebSocketClient *globalClient = NULL;
 
 #include <ESPAsyncWiFiManager.h> //https://github.com/tzapu/WiFiManager
 DNSServer dns;
+// AsyncWiFiManager wifiManager(&webServer, &dns);
 
 // tzapu WiFimanager
 // #include <WiFiManager.h>           // https://github.com/tzapu/WiFiManager
@@ -386,7 +387,8 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
 void handleConfig(AsyncWebServerRequest *request)
 {
     Serial.print("DUMMY handleConfig> start wifiManager.startWebPortal()");
-    // wifiManager.startWebPortal();
+    AsyncWiFiManager wifiManager(&webServer, &dns);
+    wifiManager.startConfigPortal("OnDemandAP");
 }
 
 // --------------------------------------------------------------------------
