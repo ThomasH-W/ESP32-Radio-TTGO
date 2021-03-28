@@ -23,9 +23,9 @@ In addition there is a webserver including song covers as well as mqtt to allow 
 ![Display-Volume](README/images/ESP_Radio_Display-1.jpg)
 
 ### Webserver
-![node-RED](README/images/ESP_Radio_WEB.jpg)
+![webserver](README/images/ESP_Radio_WEB.jpg)
 ### MQTT
-![node-RED](README/images/ESP_Radio_MQTT.jpg)
+![MQTT](README/images/ESP_Radio_MQTT.jpg)
 ### Node-RED
 ![node-RED](README/images/ESP_Radio_NodeRed.jpg)
 

@@ -4,7 +4,8 @@
 *
 *   Wifi Modul based on WifiManager by tzapu
 *   MQTT added
-*
+* Battery
+* https://github.com/0015/ThatProject/blob/master/ESP32_TTGO/TTGO_Battery_Indicator/TTGO_Battery_Indicator.ino
 */
 
 // https://www.rustimation.eu/index.php/esp8266-wifi-parameter-speichern/
