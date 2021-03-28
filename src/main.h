@@ -4,7 +4,7 @@
 #ifndef MAIN_h
 #define MAIN_h
 
-// https://github.com/Locoduino/RingBuffer
+#define FIRMWARE_VERSION "0.5"
 
 #include "Arduino.h"
 #include "FS.h"
