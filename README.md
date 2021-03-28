@@ -31,7 +31,7 @@ In addition there is a webserver including song covers as well as mqtt to allow 
 
 ## Setup
 ### WiFi Manager
-Upon first boot, the wifi  manager will start and ask for wifi credntials as well as mqtt setting.
+Upon first boot, the wifi  manager will start and ask for wifi credentials as well as mqtt setting.
 ### Radio Stations
 10 stations can be configured using the four parameters below. PlatformIO: data/setup.ini
 - RadioName = 1Live
@@ -92,7 +92,7 @@ In addition you need to connect the following pins:
 
 ### LittleFS
 
-The build in upload tool for ESP32 does not work. Two files are used to overcome this:
+The build in upload tool for ESP32 does not work for littleFS. Two files are used to overcome this:
 - littlefsbuilder.py
 - mklittlefs.exe
 
@@ -118,3 +118,11 @@ File: PlatformIO\Projects\TTGO-Radio\.pio\libdeps\esp32doit-devkit-v1\TFT_eSPI\U
 
 - // #include <User_Setup.h>
 - #include <User_Setups/Setup25_TTGO_T_Display.h>    // Setup file for ESP32 and TTGO T-Display ST7789V SPI bus TFT
+
+### setup.ini
+Maintain your favorite radio stations (see above) in data/setup.ini
+
+### Build Filesystem and Upload Filesystem Image
+Open the PlatformIO Menu on the top left and perform both steps.
+Note: you may need to unplug/plugin your ESP to upload the image
+![PIO-Upload](README/images/ESP_Radio_PlatformIO_FS_1.jpg)
