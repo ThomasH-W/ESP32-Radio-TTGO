@@ -28,16 +28,15 @@ class ESPMessageBus {
           console.debug(event);
           resolve(await this.connect());
         };
-        this.#ws.addEventListener("error", connectionRetry, {
-          once: true,
-        });
+        this.#ws.addEventListener("error", connectionRetry);
+        this.#ws.addEventListener("close", connectionRetry);
         this.#ws.addEventListener("open", () => {
           console.log("EMB: Connection Opened");
           this.#ws.removeEventListener("error", connectionRetry);
-          this.#ws.addEventListener("error", (e) => this.connect(e.data));
+          this.#ws.addEventListener("error", console.log);
+          // this.#ws.addEventListener("error", (e) => this.connect(e.data));
           resolve(this.#ws);
         });
-        this.#ws.addEventListener("close", connectionRetry);
       });
     }
   }
@@ -168,10 +167,10 @@ class ESPMessageBus {
   }
 }
 
-// const emb = new ESPMessageBus();
+const emb = new ESPMessageBus();
 
 // for frontend testing
-const emb = new ESPMessageBus({ wsURL: "ws://192.168.178.148" });
+// const emb = new ESPMessageBus({ wsURL: "ws://192.168.178.148" });
 window.emb = emb; // do this for easy debugging
 
 /****************/
