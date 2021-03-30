@@ -49,16 +49,18 @@ int audio_rotary_button(void)
 {
     int rotaryPos = 0;
     if (!au.radioRotaryVolume)
-    {
+    { // was mode station
         au.radioRotaryVolume = true;
         rotaryPos = au.radioCurrentVolume;
+        serial_d_printf("audio::audio_rotary_button> Volume: %o - %d\n", au.radioRotaryVolume, rotaryPos);
     }
     else
-    {
+    { // was mode volume
         au.radioRotaryVolume = false;
         rotaryPos = au.radioCurrentStation;
+        serial_d_printf("audio::audio_rotary_button> Radio: %o - %d\n", au.radioRotaryVolume, rotaryPos);
+        previousMillisRotary = millis(); // otherwise mode will be reset in loop_audio()
     }
-    serial_d_printf("audio::audio_rotary_button> %o - %d\n", au.radioRotaryVolume, rotaryPos);
     return rotaryPos;
 } // end of function
 
@@ -68,7 +70,7 @@ void audio_rotary_rotation(bool dirUp)
 {
 
     if (au.radioRotaryVolume)
-    {
+    { // mode volume
         serial_d_printf("audio::audio_rotary_rotation> Volume %o ; turn up %o\n", au.radioRotaryVolume, dirUp);
         if (dirUp)
             audio_mode(AUDIO_VOLUME_UP);
@@ -76,13 +78,13 @@ void audio_rotary_rotation(bool dirUp)
             audio_mode(AUDIO_VOLUME_DOWN);
     }
     else
-    {
+    { // mode station
         serial_d_printf("audio::audio_rotary_rotation> Preset %o ; turn up %o\n", !au.radioRotaryVolume, dirUp);
         if (dirUp)
             station_pre_select(au.radioNextStation + 1);
         else
             station_pre_select(au.radioNextStation - 1);
-        previousMillisRotary = millis();
+        previousMillisRotary = millis(); // otherwise mode will be reset in loop_audio()
     }
 
 } // end of function
@@ -201,7 +203,13 @@ void station_pre_select(int stationID)
 void station_apply_preselect(void)
 {
     if (au.radioNextStation != au.radioCurrentStation)
+    {
+        serial_d_printf("audio::station_apply_preselect> requested preset %d != %d\n", au.radioNextStation, au.radioCurrentStation);
         station_select(au.radioNextStation);
+    }
+    else
+        serial_d_printf("audio::station_apply_preselect> no change for preset %d = %d = current\n", au.radioNextStation, au.radioCurrentStation);
+
     au.preSelect = false;
 } // end of function
 
@@ -384,7 +392,6 @@ void audio_showstreamtitle(const char *info)
         mqtt_pub_tele("SongTitle", au.radioSongTitle);
 
         audio_ws_meta();
-
     }
     // show memory usage and publish free heap
     uint32_t freeHeap = memoryInfo();

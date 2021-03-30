@@ -53,6 +53,7 @@ void rotary_onButtonClick()
         Serial.println("rotary_onButtonClick> button pressed");
         rotaryPos = audio_rotary_button();
         rotaryEncoder.reset(rotaryPos); // this will trigger rotaryEncoder.encoderChanged()
+        Serial.printf("rotary_onButtonClick> rotaryPos: %d\n", rotaryPos);
         ignoreNextChange = true;
     }
 } // end of function

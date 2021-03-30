@@ -79,6 +79,7 @@ In addition you need to connect the following pins:
 | XMT     | 10K -> 3V3  | Mute: pulled via 10k Resistor to 3,3V to un-mute|
 
 ### Rotary Encoder
+The direction can be changed by swapping A + B.
 
 | Encoder     | ESP    |
 | :---------- | :----- |
@@ -103,8 +104,8 @@ The build in upload tool for ESP32 does not work for littleFS. Two files are use
 - mklittlefs.exe
 
 #### platformio.ini
-board_build.filesystem = littlefs
-extra_scripts = ./littlefsbuilder.py
+- board_build.filesystem = littlefs
+- extra_scripts = ./littlefsbuilder.py
 
 ### TFT_eSPI
 
