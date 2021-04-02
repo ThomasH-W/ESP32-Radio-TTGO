@@ -27,7 +27,8 @@ enum Update
 {
     UP_INFO,   // 0 stream info
     UP_VOLUME, // 1 volume changed
-    UP_PRESET  // 2 new station
+    UP_PRESET, // 2 new station
+    UP_TIME    // 3 show time
 };
 
 enum audio_modes

@@ -1,6 +1,7 @@
 #ifndef _GPIO_PINS_H
 #define _GPIO_PINS_H
 
+// ------------------------------------------------------------------------------------------------------------------------------------
 #ifdef ESP32
 
 //See file .../hardware/espressif/esp32/variants/(esp32|doitESP32devkitV1)/pins_arduino.h
@@ -59,6 +60,8 @@
 
 #define PIN_SCL 22 // Pin SCL mapped to pin GPIO22/SCL of ESP32
 #define PIN_SDA 21 // Pin SDA mapped to pin GPIO21/SDA of ESP32
+
+// ------------------------------------------------------------------------------------------------------------------------------------
 #else
 //PIN_D0 can't be used for PWM/I2C
 #define PIN_D0 16  // Pin D0 mapped to pin GPIO16/USER/WAKE of ESP8266. This pin is also used for Onboard-Blue LED. PIN_D0 = 0 => LED ON

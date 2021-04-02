@@ -41,12 +41,101 @@ wifi_data_struct wifiData;
 myNTP myNtp;
 unsigned long lastNtp = 0;
 
+#include <AceButton.h>
+using namespace ace_button;
+const int BUTTON1_PIN = 0;
+const int BUTTON2_PIN = 35;
+const int BUTTON3_PIN = 36; // 37;
+AceButton button1(BUTTON1_PIN);
+AceButton button2(BUTTON2_PIN);
+AceButton button3(BUTTON3_PIN);
+void handleEvent(AceButton *, uint8_t, uint8_t);
+const int LED_PIN = 2; // for ESP32
+
 audio_data_struct *audio_data_ptr;
 wifi_data_struct *wifi_data_ptr;
 
 bool displayUpdate = false;
 int mode = 0, oldMode = 0; // based on state
 unsigned long currentMillisLoop = 0, previousMillisDisplay = 0, intervalDisplayLoop = 3000;
+
+// --------------------------------------------------------------------------
+// https://github.com/bxparks/AceButton
+// https://github.com/bxparks/AceButton/blob/develop/examples/TwoButtonsUsingOneButtonConfig/TwoButtonsUsingOneButtonConfig.ino
+void setup_button()
+{
+  // Buttons use the built-in pull up register.
+  pinMode(BUTTON1_PIN, INPUT_PULLUP);
+  pinMode(BUTTON2_PIN, INPUT_PULLUP);
+  pinMode(BUTTON3_PIN, INPUT_PULLUP);
+
+  // Configure the ButtonConfig with the event handler, and enable all higher
+  // level events.
+  ButtonConfig *buttonConfig = ButtonConfig::getSystemButtonConfig();
+  buttonConfig->setEventHandler(handleEvent);
+  buttonConfig->setFeature(ButtonConfig::kFeatureClick);
+  buttonConfig->setFeature(ButtonConfig::kFeatureDoubleClick);
+  buttonConfig->setFeature(ButtonConfig::kFeatureLongPress);
+  buttonConfig->setFeature(ButtonConfig::kFeatureRepeatPress);
+
+  // Check if the button was pressed while booting
+  if (button1.isPressedRaw())
+  {
+    Serial.println(F("setup(): button 1 was pressed while booting"));
+  }
+  if (button2.isPressedRaw())
+  {
+    Serial.println(F("setup(): button 2 was pressed while booting"));
+  }
+  if (button3.isPressedRaw())
+  {
+    Serial.println(F("setup(): button 3 was pressed while booting"));
+  }
+
+} // end of function
+
+// --------------------------------------------------------------------------
+// The event handler for the button.
+void handleEvent(AceButton *button, uint8_t eventType, uint8_t buttonState)
+{
+
+  // Print out a message for all events, for both buttons.
+  Serial.print(F("handleEvent(): pin: "));
+  Serial.print(button->getPin());
+  Serial.print(F("; eventType: "));
+  Serial.print(eventType);
+  Serial.print(F("; buttonState: "));
+  Serial.println(buttonState);
+
+  // Control the LED only for the Pressed and Released events of Button 1.
+  // Notice that if the MCU is rebooted while the button is pressed down, no
+  // event is triggered and the LED remains off.
+  switch (eventType)
+  {
+  case AceButton::kEventPressed:
+    if (button->getPin() == BUTTON1_PIN)
+    {
+      digitalWrite(LED_PIN, LED_ON);
+    }
+    break;
+  case AceButton::kEventReleased:
+    if (button->getPin() == BUTTON1_PIN)
+    {
+      digitalWrite(LED_PIN, LED_OFF);
+    }
+    break;
+  case AceButton::kEventClicked:
+    if (button->getPin() == BUTTON2_PIN)
+    {
+      Serial.println(F("Button 2 clicked!"));
+    }
+    if (button->getPin() == BUTTON3_PIN)
+    {
+      Serial.println(F("Button 3 clicked!"));
+    }
+    break;
+  }
+} // end of function
 
 // --------------------------------------------------------------------------
 // set flag for updating display, will be recognized next time in displayLoop
@@ -125,8 +214,8 @@ void displayLoop(void)
   {
     switch (mode)
     {
-    case ST_GUI_1:                                    // 3
-      pub_wifi_info();                                // get latest wifi signal strength
+    case ST_GUI_1:     // 3
+      pub_wifi_info(); // get latest wifi signal strength
       myNtp.value(wifi_data_ptr->timeOfDayChar, wifi_data_ptr->dateChar);
       myDisplay1.Gui1(audio_data_ptr, wifi_data_ptr); // text
       break;
@@ -156,6 +245,8 @@ void setup()
   delay(10);
   myDisplay1.println("> Boot ...");
 
+  setup_button();
+
   setup_read_file(); // read setup
   readVoltage();     // must be done before wifi is established - conflict using ADC
 
@@ -174,7 +265,7 @@ void setup()
   audio_data_ptr = setup_audio(); // start audio
 
   mqtt_pub_tele("INFO", "setup complete");
-  list_FS();      // debug: show files in littlefs
+  list_FS(); // debug: show files in littlefs
 
   setup_rotary(); // initialize rotary encoder
   myDisplay1.println("> setup complete");
@@ -188,7 +279,10 @@ void loop()
   loop_wifi();
   loop_rotary();
   loop_audio();
-  myNtp.loop(); 
+  myNtp.loop();
+
+  button1.check();
+  button2.check();
 
   displayLoop();
   yield();
