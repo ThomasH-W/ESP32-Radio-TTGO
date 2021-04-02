@@ -98,10 +98,11 @@ void setup_button()
 // The event handler for the button.
 void handleEvent(AceButton *button, uint8_t eventType, uint8_t buttonState)
 {
+  int butPressed = button->getPin();
 
   // Print out a message for all events, for both buttons.
   Serial.print(F("handleEvent(): pin: "));
-  Serial.print(button->getPin());
+  Serial.print(butPressed);
   Serial.print(F("; eventType: "));
   Serial.print(eventType);
   Serial.print(F("; buttonState: "));
@@ -112,28 +113,25 @@ void handleEvent(AceButton *button, uint8_t eventType, uint8_t buttonState)
   // event is triggered and the LED remains off.
   switch (eventType)
   {
-  case AceButton::kEventPressed:
-    if (button->getPin() == BUTTON1_PIN)
+  case AceButton::kEventReleased: // kEventPressed
+    if (butPressed == BUTTON1_PIN)
     {
-      digitalWrite(LED_PIN, LED_ON);
+      serial_printf("handleEvent> preset_up for pin %d\n", butPressed);
+      audio_mode(AUDIO_PRESET_UP);
+    }
+    else if (butPressed == BUTTON2_PIN)
+    {
+      serial_printf("handleEvent> GUI for pin %d\n", butPressed);
+      // audio_mode(AUDIO_MUTE);
+      if (mode==ST_GUI_1)
+        mode = ST_GUI_4;
+      else
+        mode = ST_GUI_1;
+      displayUpdate = true;
     }
     break;
-  case AceButton::kEventReleased:
-    if (button->getPin() == BUTTON1_PIN)
-    {
-      digitalWrite(LED_PIN, LED_OFF);
-    }
-    break;
-  case AceButton::kEventClicked:
-    if (button->getPin() == BUTTON2_PIN)
-    {
-      Serial.println(F("Button 2 clicked!"));
-    }
-    if (button->getPin() == BUTTON3_PIN)
-    {
-      Serial.println(F("Button 3 clicked!"));
-    }
-    break;
+  default:
+    serial_printf("handleEvent> unknown for pin %d & %d\n", butPressed, eventType);
   }
 } // end of function
 
@@ -224,6 +222,9 @@ void displayLoop(void)
       break;
     case ST_GUI_3:                     // 4
       myDisplay1.Gui3(audio_data_ptr); // gauge left/right
+      break;
+    case ST_GUI_4:                     // 4
+      myDisplay1.Gui4(wifi_data_ptr);  // gauge left/right
       break;
     }
     previousMillisDisplay = millis();

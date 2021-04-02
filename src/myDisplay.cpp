@@ -290,7 +290,7 @@ void myDisplay::Gui3(audio_data_struct *aData)
 
 // ------------------------------------------------------------------------------------------------------------------------
 // 4 show wifi info
-void myDisplay::Gui4(wifi_data_struct *wData)
+void myDisplay::Gui5(wifi_data_struct *wData)
 {
     // 240 * 135
     // myTFT.fillScreen(TFT_BLACK);
@@ -309,19 +309,20 @@ void myDisplay::Gui4(wifi_data_struct *wData)
 
 // ------------------------------------------------------------------------------------------------------------------------
 // 6 clock
-void myDisplay::Gui5(wifi_data_struct *wData)
+void myDisplay::Gui4(wifi_data_struct *wData)
 {
     // 240 * 135
     uint16_t yInfo = tft_h / 2;
-    // myTFT.fillScreen(TFT_BLACK);
+    
+    myTFT.fillScreen(TFT_BLACK);
     myTFT.setTextColor(TFT_WHITE, TFT_BLACK);
 
-    //wfiSignal(aData.rssiLevel);
-    wfiSignal(200, 30, 18, wData->rssiLevel); // x=100, y=100, max=22
-
     // show time from ntp
-    Serial.printf("myDisplay::Gui1 drawstring >%s<\n", wData->timeOfDayChar);
-    myTFT.drawString(wData->timeOfDayChar, 10, yInfo, 6); // string, x,y, font
+    Serial.printf("myDisplay::Gui4 drawstring >%s<\n", wData->timeOfDayChar);
+    myTFT.drawString(wData->timeOfDayChar, 0, yInfo, 8); // string, x,y, font
+
+    myTFT.drawString("IP", 3, 130, 2);                  // string, x,y, font
+    myTFT.drawString(wData->IPChar, 20, 130, 2);        // string, x,y, font
 
     printlines = 0;
 } // end of function

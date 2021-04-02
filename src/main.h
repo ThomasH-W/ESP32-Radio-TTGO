@@ -20,7 +20,8 @@ enum States
     ST_BOOT,  // 0 pure text
     ST_GUI_1, // 1 Time/WLAN -- CO2 -- Temp/Humi
     ST_GUI_2, // 2 Volume
-    ST_GUI_3  // 2 Preset
+    ST_GUI_3, // 2 Preset
+    ST_GUI_4  // 4 Clock
 };
 
 enum Update
