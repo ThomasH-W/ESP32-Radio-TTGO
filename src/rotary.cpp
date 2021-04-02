@@ -40,12 +40,12 @@ bool ignoreNextChange = false;
 
 int audio_rotary_button(void);
 void audio_rotary_rotation(bool dirUp);
+unsigned long lastTimePressed = 0;
 
 //-------------------------------------------------------------------------------------------------------
 void rotary_onButtonClick()
 {
     int rotaryPos = 0;
-    static unsigned long lastTimePressed = 0;
     //ignore multiple press in that time milliseconds
     if (millis() - lastTimePressed > 500)
     {
@@ -71,9 +71,9 @@ void rotary_loop()
         {
             readOldVal = readVal;
             readVal = rotaryEncoder.readEncoder();
-            Serial.print("rotary_onButtonClick> Value: ");
+            Serial.print("rotary_loop> Value: ");
             Serial.println(readVal);
-            if (readVal > readOldVal)
+            if (readVal > readOldVal) // check direction
                 audio_rotary_rotation(true);
             else
                 audio_rotary_rotation(false);
@@ -86,6 +86,7 @@ void rotary_loop()
 //-------------------------------------------------------------------------------------------------------
 void setup_rotary()
 {
+    //Serial.println("rotary::setup_rotary> start");
     //we must initialize rotary encoder
     rotaryEncoder.begin();
 
@@ -107,6 +108,9 @@ void setup_rotary()
    */
     rotaryEncoder.disableAcceleration(); //acceleration is now enabled by default - disable if you dont need it
     // rotaryEncoder.setAcceleration(250); //or set the value - larger number = more accelearation; 0 or 1 means disabled acceleration
+    lastTimePressed = millis();
+    ignoreNextChange = true;
+    Serial.println("rotary::setup_rotary> done");
 } // end of function
 
 //-------------------------------------------------------------------------------------------------------

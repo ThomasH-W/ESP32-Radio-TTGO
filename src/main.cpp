@@ -37,6 +37,10 @@ myDisplay myDisplay1;
 char statusChar[50];
 wifi_data_struct wifiData;
 
+#include "myNTP.h"
+myNTP myNtp;
+unsigned long lastNtp = 0;
+
 audio_data_struct *audio_data_ptr;
 wifi_data_struct *wifi_data_ptr;
 
@@ -123,6 +127,7 @@ void displayLoop(void)
     {
     case ST_GUI_1:                                    // 3
       pub_wifi_info();                                // get latest wifi signal strength
+      myNtp.value(wifi_data_ptr->timeOfDayChar, wifi_data_ptr->dateChar);
       myDisplay1.Gui1(audio_data_ptr, wifi_data_ptr); // text
       break;
     case ST_GUI_2:                     // 4
@@ -152,7 +157,7 @@ void setup()
   myDisplay1.println("> Boot ...");
 
   setup_read_file(); // read setup
-  readVoltage(); // must be done before wifi is established - conflict using ADC
+  readVoltage();     // must be done before wifi is established - conflict using ADC
 
   myDisplay1.print("> Firmware ");
   myDisplay1.println(FIRMWARE_VERSION);
@@ -162,10 +167,15 @@ void setup()
   setup_wifi(); // call wifimanager and establish mqtt connection
   wifi_data_ptr = setup_wifi_info();
 
+  myDisplay1.println("> setup NTP ...");
+  myNtp.begin();
+
   myDisplay1.println("> setup audio ...");
   audio_data_ptr = setup_audio(); // start audio
+
   mqtt_pub_tele("INFO", "setup complete");
-  list_FS(); // debug: show files in littlefs
+  list_FS();      // debug: show files in littlefs
+
   setup_rotary(); // initialize rotary encoder
   myDisplay1.println("> setup complete");
 
@@ -176,8 +186,9 @@ void setup()
 void loop()
 {
   loop_wifi();
-  loop_audio();
   loop_rotary();
+  loop_audio();
+  myNtp.loop(); 
 
   displayLoop();
   yield();

@@ -7,7 +7,7 @@
 #include "Arduino.h"
 
 #include <User_Setups/Setup25_TTGO_T_Display.h>
-#define USER_SETUP_LOADED
+// #define USER_SETUP_LOADED
 
 #include <TFT_eSPI.h> // Hardware-specific library
 #include <SPI.h>
@@ -31,7 +31,8 @@ public:
     void Gui2(audio_data_struct *sData);
     void Gui0();
     void Gui3(audio_data_struct *sData);
-    void Gui4(wifi_data_struct sensorData);
+    void Gui4(wifi_data_struct *wData);
+    void Gui5(wifi_data_struct *wData);
 
   private:
     TFT_eSPI myTFT = TFT_eSPI(); // Invoke custom library

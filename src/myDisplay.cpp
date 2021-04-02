@@ -185,24 +185,30 @@ void myDisplay::Gui1(audio_data_struct *aData, wifi_data_struct *wData)
 
     myTFT.drawLine(1, 100, tft_w, 100, TFT_WHITE); // xs,ys,xe,ye,col);
 
+    int yInfo = 122;
     sprintf(buf, "Vol %d", aData->radioCurrentVolume);
-
     if (aData->radioMute)
     {
         myTFT.setTextColor(TFT_RED, TFT_BLACK);
-        myTFT.drawString("mute   ", 2, 120, 2); // string, x,y, font
+        myTFT.drawString("mute   ", 2, yInfo, 2); // string, x,y, font
         // https://github.com/Bodmer/TFT_eSPI/blob/master/examples/Generic/ESP32_SDcard_jpeg/ESP32_SDcard_jpeg.ino
         myTFT.setTextColor(TFT_WHITE, TFT_BLACK);
     }
     else
     {
-        myTFT.drawString(buf, 2, 120, 2); // string, x,y, font
+        myTFT.drawString(buf, 2, yInfo, 2); // string, x,y, font
     }
 
-    myTFT.drawString(aData->radioBitRate, 60, 120, 2); // string, x,y, font
+    // myTFT.drawString(aData->radioBitRate, 60, yInfo, 2); // string, x,y, font
 
-    sprintf(buf, "%d - %s", aData->radioCurrentStation + 1, aData->radioName);
-    myTFT.drawString(buf, 95, 120, 2); // string, x,y, font
+    // show time from ntp
+    Serial.printf("myDisplay::Gui1 drawstring >%s<\n", wData->timeOfDayChar);
+    myTFT.drawString(wData->timeOfDayChar, 60, yInfo, 2); // string, x,y, font
+
+    // show current station
+    // sprintf(buf, "%d - %s", aData->radioCurrentStation + 1, aData->radioName);
+    // myTFT.drawString(buf, 95, yInfo, 2); // string, x,y, font
+    myTFT.drawString(aData->radioName, 110, yInfo, 2); // string, x,y, font
 
     printlines = 0;
 } // end of function
@@ -265,36 +271,57 @@ void myDisplay::Gui3(audio_data_struct *aData)
     myTFT.setTextColor(TFT_WHITE, TFT_BLUE);
     myTFT.setTextSize(1);
 
-    myTFT.setTextDatum(TR_DATUM); // Set datum to Middle Right
     sprintf(buf, "%d", aData->radioNextStation + 1);
     Serial.printf("myDisplay::Gui3 drawstring PRESET>%s<\n", buf);
-    myTFT.drawString(buf, tft_w - 10, 20, 6); // string, x,y, font
+    // myTFT.setTextDatum(TR_DATUM); // Set datum to Middle Right
+    // myTFT.drawString(buf, tft_w - 10, 20, 6); // string, x,y, font
+    myTFT.setTextDatum(ML_DATUM);     // Set datum to Middle Right
+    myTFT.drawString(buf, 5, 27, 6); // string, x,y, font
 
     myTFT.setTextDatum(ML_DATUM); // Set datum to Middle Right
     sprintf(buf, "%s", aData->radioNextName);
     Serial.printf("myDisplay::Gui3 drawstring NAME  >%s<\n", buf);
     myTFT.setTextSize(2);                // size 2; font 4
-    myTFT.drawString(buf, 2, y + 10, 4); // string, x,y, font
+    myTFT.drawString(buf, 20, y + 12, 4); // string, x,y, font
 
     myTFT.setTextDatum(ML_DATUM);
     myTFT.setTextSize(1);
 } // end of function
 
 // ------------------------------------------------------------------------------------------------------------------------
-// 5 Admin: WiFi, Sensor Version, Sensor ID
-void myDisplay::Gui4(wifi_data_struct wData)
+// 4 show wifi info
+void myDisplay::Gui4(wifi_data_struct *wData)
 {
     // 240 * 135
     // myTFT.fillScreen(TFT_BLACK);
     myTFT.setTextColor(TFT_WHITE, TFT_BLACK);
 
     //wfiSignal(aData.rssiLevel);
-    wfiSignal(200, 30, 18, wData.rssiLevel); // x=100, y=100, max=22
+    wfiSignal(200, 30, 18, wData->rssiLevel); // x=100, y=100, max=22
 
-    myTFT.drawString(wData.ssidChar, 3, 30, 4); // string, x,y, font
+    myTFT.drawString(wData->ssidChar, 3, 30, 4); // string, x,y, font
 
     myTFT.drawString("IP", 3, 65, 4);          // string, x,y, font
-    myTFT.drawString(wData.IPChar, 40, 65, 4); // string, x,y, font
+    myTFT.drawString(wData->IPChar, 40, 65, 4); // string, x,y, font
+
+    printlines = 0;
+} // end of function
+
+// ------------------------------------------------------------------------------------------------------------------------
+// 6 clock
+void myDisplay::Gui5(wifi_data_struct *wData)
+{
+    // 240 * 135
+    uint16_t yInfo = tft_h / 2;
+    // myTFT.fillScreen(TFT_BLACK);
+    myTFT.setTextColor(TFT_WHITE, TFT_BLACK);
+
+    //wfiSignal(aData.rssiLevel);
+    wfiSignal(200, 30, 18, wData->rssiLevel); // x=100, y=100, max=22
+
+    // show time from ntp
+    Serial.printf("myDisplay::Gui1 drawstring >%s<\n", wData->timeOfDayChar);
+    myTFT.drawString(wData->timeOfDayChar, 10, yInfo, 6); // string, x,y, font
 
     printlines = 0;
 } // end of function

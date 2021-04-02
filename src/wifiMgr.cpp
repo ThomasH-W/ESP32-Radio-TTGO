@@ -6,11 +6,13 @@
 *   MQTT added
 * Battery
 * https://github.com/0015/ThatProject/blob/master/ESP32_TTGO/TTGO_Battery_Indicator/TTGO_Battery_Indicator.ino
+*
+* https://github.com/alanswx/ESPAsyncWiFiManager
+* lib_deps =
+*    alanswx/ESPAsyncWiFiManager
 */
 
 // https://www.rustimation.eu/index.php/esp8266-wifi-parameter-speichern/
-// lib_deps =
-//    https://github.com/tzapu/WiFiManager.git
 
 #if !defined(ESP32)
 #error This code is intended to run on the ESP32 platform! Please check your Tools->Board setting.
@@ -352,17 +354,21 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
             data[len] = 0;
             char *command = (char *)data;
             Serial.printf("onWsEvent> command: >%s< len: %d\n", command, strlen(command));
+
+            // onWsEvent> command: >playstate=pause< len: 15
             if (strncmp(command, "playstate", strlen("playstate")) == 0)
             {
                 char *value = command + strlen("playstate=");
-                if (strncmp(value, "play", 4) || strncmp(value, "unmute", 6))
-                {
+                Serial.printf("onWsEvent> playstate: >%s< len: %d\n", value, strlen(value));
+                // if (strncmp(value, "play", 4) || strncmp(value, "unmute", 6))
+                if (strncmp(value, "play", strlen("play")) == 0)
+                    audio_mode(AUDIO_PLAY);
+                if (strncmp(value, "unmute", strlen("unmute")) == 0)
+                    audio_mode(AUDIO_PLAY);
+                if (strncmp(value, "mute", strlen("mute")) == 0)
                     audio_mode(AUDIO_MUTE);
-                }
-                else
-                {
+                if (strncmp(value, "pause", strlen("pause")) == 0)
                     audio_mode(AUDIO_MUTE);
-                }
             }
             if (strncmp(command, "volume", strlen("volume")) == 0)
             {
@@ -408,7 +414,6 @@ void setup_webServer()
     webServer.serveStatic("/", LITTLEFS, "/").setDefaultFile("index.html");
 
     webServer.serveStatic("/radio", LITTLEFS, "/").setDefaultFile("radio.html");
-
 
     webServer.on("/config", handleConfig);
 
@@ -693,9 +698,6 @@ String serverName = "http://musicbrainz.org/ws/2/release/?fmt=json&limit=1&query
 void getCoverBMID(char *Artist, char *SongTitle)
 {
     return;
-
-
-
 
     HTTPClient http;
 

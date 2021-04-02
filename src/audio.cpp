@@ -71,19 +71,29 @@ void audio_rotary_rotation(bool dirUp)
 
     if (au.radioRotaryVolume)
     { // mode volume
-        serial_d_printf("audio::audio_rotary_rotation> Volume %o ; turn up %o\n", au.radioRotaryVolume, dirUp);
         if (dirUp)
+        {
+            serial_d_printf("audio::audio_rotary_rotation> + Volume (vol %o / dir %o)\n", au.radioRotaryVolume, dirUp);
             audio_mode(AUDIO_VOLUME_UP);
+        }
         else
+        {
+            serial_d_printf("audio::audio_rotary_rotation> - Volume (vol %o / dir %o)\n", au.radioRotaryVolume, dirUp);
             audio_mode(AUDIO_VOLUME_DOWN);
+        }
     }
     else
     { // mode station
-        serial_d_printf("audio::audio_rotary_rotation> Preset %o ; turn up %o\n", !au.radioRotaryVolume, dirUp);
         if (dirUp)
+        {
+            serial_d_printf("audio::audio_rotary_rotation> + Preset (next id %o / dir %o)\n", au.radioNextStation +1, dirUp);
             station_pre_select(au.radioNextStation + 1);
+        }
         else
+        {
+            serial_d_printf("audio::audio_rotary_rotation> - Preset (next id %o / dir %o)\n", au.radioNextStation -1, dirUp);
             station_pre_select(au.radioNextStation - 1);
+        }
         previousMillisRotary = millis(); // otherwise mode will be reset in loop_audio()
     }
 
@@ -100,7 +110,7 @@ void audio_mode(int mode)
 // used for mqtt messages to request certain actions
 void audio_mode(int mode, int value)
 {
-    serial_d_printf("audio::audio_mode> %d\n", mode);
+    // serial_d_printf("audio::audio_mode> %d\n", mode);
     char buf[10];
     switch (mode)
     {
@@ -119,6 +129,15 @@ void audio_mode(int mode, int value)
         }
         au.update = UP_VOLUME;
         break;
+    case AUDIO_PLAY:
+        if (au.radioMute) // true (1) or false (0)
+        {
+            audio.setVolume(au.radioCurrentVolume);
+            au.radioMute = false;
+            mqtt_pub_tele("Mute", "play");
+            au.update = UP_VOLUME;
+        }
+        break;
     case AUDIO_VOLUME:
         au.radioCurrentVolume = value;
         serial_d_printf("audio::audio_mode> volume %d\n", au.radioCurrentVolume);
@@ -126,11 +145,15 @@ void audio_mode(int mode, int value)
         au.update = UP_VOLUME;
         break;
     case AUDIO_VOLUME_UP:
-        audio.setVolume(++au.radioCurrentVolume);
+        if (++au.radioCurrentVolume > AUDIO_MAX_VOLUME)
+            au.radioCurrentVolume = AUDIO_MAX_VOLUME;
+                audio.setVolume(au.radioCurrentVolume);
         au.update = UP_VOLUME;
         break;
     case AUDIO_VOLUME_DOWN:
-        audio.setVolume(--au.radioCurrentVolume);
+        if (--au.radioCurrentVolume < 0)
+            au.radioCurrentVolume = 0;
+        audio.setVolume(au.radioCurrentVolume);
         au.update = UP_VOLUME;
         break;
     case AUDIO_PRESET_UP:
@@ -155,8 +178,7 @@ void audio_mode(int mode, int value)
         break;
     }
 
-    serial_d_printf("audio Station %d\n", au.radioCurrentStation);
-    serial_d_printf("audio Volume %d\n", au.radioCurrentVolume);
+    serial_d_printf("audio::audio_mode> %d: Station %d, Volume %d\n", mode, au.radioCurrentStation, au.radioCurrentVolume);
     sprintf(buf, "%d", au.radioCurrentVolume);
     mqtt_pub_tele("Volume", buf);
     main_displayUpdate(false);
@@ -725,7 +747,7 @@ audio_data_struct *setup_audio()
     mqtt_pub_tele("Title", "");
     audio.setPinout(setupGPIO.P_I2S_BCLK, setupGPIO.P_I2S_LRCK, setupGPIO.P_I2S_DATA);
     station_select(au.radioCurrentStation);
-
+    previousMillisRotary = millis();
     return &au;
 } // end of function
 

@@ -4,7 +4,7 @@
 #ifndef MAIN_h
 #define MAIN_h
 
-#define FIRMWARE_VERSION "0.5"
+#define FIRMWARE_VERSION "0.6"
 
 #include "Arduino.h"
 #include "FS.h"
@@ -13,6 +13,7 @@
 #define FlashFS LittleFS
 
 #define AUDIO_DEFAULT_VOLUME 12
+#define AUDIO_MAX_VOLUME 20
 
 enum States
 {
@@ -34,6 +35,7 @@ enum audio_modes
     AUDIO_STOP,
     AUDIO_START,
     AUDIO_MUTE,
+    AUDIO_PLAY,
     AUDIO_VOLUME,
     AUDIO_VOLUME_UP,
     AUDIO_VOLUME_DOWN,
@@ -66,6 +68,8 @@ struct wifi_data_struct
     int rssiLevel = 0; // wifi signal strength
     char ssidChar[20]; // SSID - wlan name
     char IPChar[20];   // SSID - wlan name
+    char timeOfDayChar[20];
+    char dateChar[20];
 };
 
 audio_data_struct *setup_audio(void);
