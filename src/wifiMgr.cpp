@@ -413,7 +413,8 @@ void setup_webServer()
     // webServer.on("/", handleRoot);
     webServer.serveStatic("/", LITTLEFS, "/").setDefaultFile("index.html");
 
-    webServer.serveStatic("/radio", LITTLEFS, "/").setDefaultFile("radio.html");
+    // webServer.serveStatic("/radio", LITTLEFS, "/").setDefaultFile("radio.html");
+    webServer.on("/radio", handleConfig); // must be changed - Raphael
 
     webServer.on("/config", handleConfig);
 
