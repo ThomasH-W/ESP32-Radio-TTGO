@@ -397,6 +397,19 @@ void handleConfig(AsyncWebServerRequest *request)
     wifiManager.startConfigPortal("OnDemandAP");
 }
 
+void handleRadioConfig(AsyncWebServerRequest *request)
+{
+    if (request->hasParam("config", true))
+    {
+        AsyncWebParameter *p = request->getParam("config");
+        // use p->value() to read the new config
+        Serial.println(p->value().c_str());
+    }
+
+    // After handling the post we redirect to the config page
+    request->redirect("/radio.html");
+}
+
 // --------------------------------------------------------------------------
 void setup_webServer()
 {
@@ -410,11 +423,7 @@ void setup_webServer()
         Serial.println(F("fail."));
     }
 
-    // webServer.on("/", handleRoot);
-    webServer.serveStatic("/", LITTLEFS, "/").setDefaultFile("index.html");
-
-    // webServer.serveStatic("/radio", LITTLEFS, "/").setDefaultFile("radio.html");
-    webServer.on("/radio", handleConfig); // must be changed - Raphael
+    webServer.on("/radio", handleRadioConfig);
 
     webServer.on("/config", handleConfig);
 
@@ -422,6 +431,7 @@ void setup_webServer()
         request->send(200, "text/plain", "this works as well");
     });
 
+    webServer.serveStatic("/", LITTLEFS, "/").setDefaultFile("index.html");
     webServer.onNotFound(handleNotFound);
 
     ws.onEvent(onWsEvent);
