@@ -270,6 +270,39 @@ bool loadFromSPIFFS(AsyncWebServerRequest *request, String path)
 } // end of function
 
 // --------------------------------------------------------------------------
+bool saveToSPIFFS(char *path, const String data)
+{
+    Serial.printf("saveToSPIFFS> write to file %s ", path);
+
+    if (LITTLEFS.exists(path))
+    {
+        File dataFile = LITTLEFS.open(path, "w");
+        if (!dataFile)
+        {
+            Serial.printf("\nERR saveToSPIFFS> file %s could not be opened for w", path);
+            return false;
+        }
+        // dataFile.write
+        // if (dataFile.print(data))
+        if (dataFile.print(data))
+        {
+            Serial.println("- file written");
+        }
+        else
+        {
+            Serial.println("- write failed");
+        }
+        dataFile.close();
+    }
+    else
+    {
+        Serial.printf("\nERR saveToSPIFFS> file %s does not exist", path);
+        return false;
+    }
+    return true;
+} // end of function
+
+// --------------------------------------------------------------------------
 void handleRoot(AsyncWebServerRequest *request)
 {
     loadFromSPIFFS(request, "/index.html");
@@ -395,20 +428,32 @@ void handleConfig(AsyncWebServerRequest *request)
     Serial.print("DUMMY handleConfig> start wifiManager.startWebPortal()");
     AsyncWiFiManager wifiManager(&webServer, &dns);
     wifiManager.startConfigPortal("OnDemandAP");
-}
+} // end of function
 
+// --------------------------------------------------------------------------
+// https://github.com/me-no-dev/ESPAsyncWebServer/blob/master/examples/ESP_AsyncFSBrowser/ESP_AsyncFSBrowser.ino
+//
 void handleRadioConfig(AsyncWebServerRequest *request)
 {
-    if (request->hasParam("config", true))
+    int params = request->params();
+    AsyncWebParameter *p = request->getParam(0);
+    if (p->isPost())
     {
-        AsyncWebParameter *p = request->getParam("config");
-        // use p->value() to read the new config
-        Serial.println(p->value().c_str());
+        // Serial.printf("_POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
+        Serial.printf("_POST[%s]\n", p->name().c_str());
+        if (request->hasParam("config", true))
+            Serial.printf("_POST[%s] is config\n", p->name().c_str());
+        saveToSPIFFS(WIFI_SETUP_FILE, p->value());
+    }
+    else
+    {
+        Serial.printf("_GET[%s]: %s\n", p->name().c_str(), p->value().c_str());
     }
 
     // After handling the post we redirect to the config page
+    // Serial.println("handleRadioConfig> redirect");
     request->redirect("/radio.html");
-}
+} // end of function
 
 // --------------------------------------------------------------------------
 void setup_webServer()
@@ -425,7 +470,7 @@ void setup_webServer()
 
     webServer.on("/radio", handleRadioConfig);
 
-    webServer.on("/config", handleConfig);
+    webServer.on("/wm", handleConfig);
 
     webServer.on("/inline", [](AsyncWebServerRequest *request) {
         request->send(200, "text/plain", "this works as well");
