@@ -43,8 +43,28 @@ button {
   color: var(--primary-color);
 }
 
-button:hover {
+button:hover,
+select:hover,
+input:hover,
+textarea:hover
+{
   background: #eee;
+}
+
+button:disabled,
+select:disabled,
+input:disabled,
+textarea:disabled
+{
+  color: #bbb;
+}
+
+button:hover:disabled,
+select:hover:disabled,
+input:hover:disabled,
+textarea:hover:disabled
+{
+  background: none;
 }
 
 .content {
@@ -71,42 +91,122 @@ header h1 {
   font-weight: 300;
 }
 
+header a {
+  color: #fff;
+  text-decoration: none;
+}
+
+header .content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 main > .content {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
   gap: 1rem;
 }
 
-#config_card form{
+#config_card {
   padding: 1rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-#config_card textarea{
+#config_card textarea {
   display: block;
   width: 100%;
   min-height: 30rem;
-  padding: .5rem;
-  border-radius: .5rem;
-  border: .1rem solid var(--primary-color);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: 0.1rem solid var(--primary-color);
 }
 
-#config_card input[type=submit]{
+#config_card #save_station_settings {
   display: block;
   width: 100%;
-  border-radius: .5rem;
+  border-radius: 0.5rem;
   padding: 1rem;
-  border: .1rem solid var(--primary-color);
+  border: 0.1rem solid var(--primary-color);
   background: #fff;
   color: var(--primary-color);
   font-size: 1.2rem;
   font-weight: bold;
 }
 
-#config_card input[type=submit]:hover{
+#config_card #save_station_settings:hover {
   background: #eee;
+}
+
+#config_card #stations_settings {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+#config_card .station_settings {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  grid-template-rows: auto auto auto;
+  grid-template-areas: "id_up id_down RadioName delete" "RadioURL RadioURL RadioURL RadioURL" "RadioTitleSeperator RadioTitleSeperator RadioTitleFirst RadioTitleFirst";
+  gap: .5rem;
+  border: 0.1rem solid var(--primary-color);
+  border-radius: 0.5rem;
+  padding: .5rem;
+}
+
+#config_card #stations_settings__add_station {
+  align-self: center;
+}
+
+#config_card .station_settings button,
+#config_card .station_settings select,
+#config_card .station_settings input {
+  padding: 0.2rem;
+  border: none;
+}
+
+#config_card .station_settings select,
+#config_card .station_settings input {
+  border-bottom: .1rem solid #000;
+}
+
+#config_card .station_settings .id_up {
+  grid-area: id_up;
+}
+
+#config_card .station_settings .id_down {
+  grid-area: id_down;
+}
+
+#config_card .station_settings .delete {
+  grid-area: delete;
+  transition: color .1s;
+}
+
+#config_card .station_settings .delete:hover {
+  color: #c00;
+}
+
+#config_card .station_settings .RadioTitleSeperator {
+  grid-area: RadioTitleSeperator;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+#config_card .station_settings .RadioURL {
+  grid-area: RadioURL;
+}
+
+#config_card .station_settings .RadioName {
+  grid-area: RadioName;
+}
+
+#config_card .station_settings .RadioTitleFirst {
+  grid-area: RadioTitleFirst;
 }
 
 #song_meta {
@@ -156,10 +256,10 @@ main > .content {
 
 @keyframes loading_spinner {
   from {
-    transform: translate(-50%, -50%) rotate(0)
+    transform: translate(-50%, -50%) rotate(0);
   }
   to {
-    transform: translate(-50%, -50%) rotate(720deg)
+    transform: translate(-50%, -50%) rotate(720deg);
   }
 }
 
@@ -182,7 +282,7 @@ main > .content {
   width: 33%;
   background-size: 200% 200%;
   animation: text-loading 2s linear infinite;
-  border-radius: .5rem;
+  border-radius: 0.5rem;
 }
 
 #song_meta #meta_title {
@@ -203,7 +303,7 @@ main > .content {
   display: block;
   background-size: 200% 200%;
   animation: text-loading 2s linear infinite;
-  border-radius: .5rem;
+  border-radius: 0.5rem;
 }
 
 @keyframes text-loading {

@@ -16,16 +16,18 @@
     <header>
       <section class="content">
         <h1>ESP Radio</h1>
+        <a class="material-icons" href="./">radio</a>
       </section>
     </header>
     <main>
       <section class="content">
         <section class="card" id="config_card">
-          <form action="radio" method="POST">
-            <h1>Configuration</h1>
-            <textarea id="config" name="config"></textarea>
-            <input type="submit" value="Speichern" />
-          </form>
+          <h1>Station Configuration</h1>
+
+          <div id="stations_settings">
+          </div>
+          <button class="material-icons" id="stations_settings__add_station">add</button>
+          <button id="save_station_settings">Speichern</button>
         </section>
       </section>
     </main>
