@@ -23,10 +23,14 @@ lip_deps =
 
 
 */
-#define ROTARY_ENCODER_A_PIN 12
-#define ROTARY_ENCODER_B_PIN 13
-#define ROTARY_ENCODER_BUTTON_PIN 15
-#define ROTARY_ENCODER_VCC_PIN 2 /* 27 put -1 of Rotary encoder Vcc is connected directly to 3,3V; else you can use declared output pin for powering rotary encoder */
+// ---------------------------------------------------------------------------
+// I am too lazy to change the code in rotary.cpp, so I re-map here
+/*
+#define ROTARY_ENCODER_A_PIN PIN_ENC0_A
+#define ROTARY_ENCODER_B_PIN PIN_ENC0_B
+#define ROTARY_ENCODER_BUTTON_PIN PIN_ENC0_BTN
+#define ROTARY_ENCODER_VCC_PIN PIN_ENC0_PWR // 27 put -1 of Rotary encoder Vcc is connected directly to 3,3V; else you can use declared output pin for powering rotary encoder
+*/
 
 //depending on your encoder - try 1,2 or 4 to get expected behaviour
 //#define ROTARY_ENCODER_STEPS 1
@@ -34,7 +38,7 @@ lip_deps =
 #define ROTARY_ENCODER_STEPS 4
 
 //instead of changing here, rather change numbers above
-AiEsp32RotaryEncoder rotaryEncoder = AiEsp32RotaryEncoder(ROTARY_ENCODER_A_PIN, ROTARY_ENCODER_B_PIN, ROTARY_ENCODER_BUTTON_PIN, ROTARY_ENCODER_VCC_PIN, ROTARY_ENCODER_STEPS);
+AiEsp32RotaryEncoder rotaryEncoder = AiEsp32RotaryEncoder(PIN_ENC0_A, PIN_ENC0_B, PIN_ENC0_BTN, PIN_ENC0_PWR, ROTARY_ENCODER_STEPS);
 
 bool ignoreNextChange = false;
 

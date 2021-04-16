@@ -4,7 +4,7 @@
 #ifndef MAIN_h
 #define MAIN_h
 
-#define FIRMWARE_VERSION "0.6"
+#define FIRMWARE_VERSION "0.7"
 
 #include "Arduino.h"
 #include "FS.h"
@@ -14,6 +14,8 @@
 
 #define AUDIO_DEFAULT_VOLUME 12
 #define AUDIO_MAX_VOLUME 20
+
+#include "GPIO_PINS.h"
 
 enum States
 {
@@ -87,6 +89,7 @@ void wsSendArtistTitle(char *Artist, char *SongTitle);
 uint32_t memoryInfo();
 void getCoverBMID(char *Artist, char *SongTitle);
 void getCoverJPG(char *coverBMID);
+void setup_gpio_pins();
 
 // audio.cpp
 void station_pre_select(int stationID);

@@ -435,7 +435,8 @@ void handleConfig(AsyncWebServerRequest *request)
 //
 void handleRadioConfig(AsyncWebServerRequest *request)
 {
-    int params = request->params();
+    // int params = request->params();
+    request->params();
     AsyncWebParameter *p = request->getParam(0);
     if (p->isPost())
     {

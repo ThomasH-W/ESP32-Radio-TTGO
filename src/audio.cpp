@@ -86,12 +86,12 @@ void audio_rotary_rotation(bool dirUp)
     { // mode station
         if (dirUp)
         {
-            serial_d_printf("audio::audio_rotary_rotation> + Preset (next id %o / dir %o)\n", au.radioNextStation +1, dirUp);
+            serial_d_printf("audio::audio_rotary_rotation> + Preset (next id %o / dir %o)\n", au.radioNextStation + 1, dirUp);
             station_pre_select(au.radioNextStation + 1);
         }
         else
         {
-            serial_d_printf("audio::audio_rotary_rotation> - Preset (next id %o / dir %o)\n", au.radioNextStation -1, dirUp);
+            serial_d_printf("audio::audio_rotary_rotation> - Preset (next id %o / dir %o)\n", au.radioNextStation - 1, dirUp);
             station_pre_select(au.radioNextStation - 1);
         }
         previousMillisRotary = millis(); // otherwise mode will be reset in loop_audio()
@@ -147,7 +147,7 @@ void audio_mode(int mode, int value)
     case AUDIO_VOLUME_UP:
         if (++au.radioCurrentVolume > AUDIO_MAX_VOLUME)
             au.radioCurrentVolume = AUDIO_MAX_VOLUME;
-                audio.setVolume(au.radioCurrentVolume);
+        audio.setVolume(au.radioCurrentVolume);
         au.update = UP_VOLUME;
         break;
     case AUDIO_VOLUME_DOWN:
@@ -478,10 +478,26 @@ void setup_show_data()
 
 } // end of function
 
+void setup_gpio_pins()
+{
+    setupGPIO.P_I2S_LRCK = PIN_I2S_LRCK;
+    setupGPIO.P_I2S_BCLK = PIN_I2S_BCLK;
+    setupGPIO.P_I2S_DATA = PIN_I2S_DATA;
+
+    setupGPIO.P_ENC0_A = PIN_ENC0_A;
+    setupGPIO.P_ENC0_B = PIN_ENC0_B;
+    setupGPIO.P_ENC0_BTN = PIN_ENC0_BTN;
+    setupGPIO.P_ENC0_PWR = PIN_ENC0_PWR;
+
+    setupGPIO.P_ADC_BAT = PIN_ADC_BAT;
+    setupGPIO.P_ADC_EN = PIN_ADC_EN;
+} // end of function
+
 // -----------------------------------------------------------------------------------------
 // read name and asign value
 void setup_use_data(int lineNo, String setupName, String setupValue)
 {
+    /*
     if (setupName.indexOf("P_I2S_LRCK") >= 0)
         setupGPIO.P_I2S_LRCK = setupValue.toInt();
     if (setupName.indexOf("P_I2S_BCLK") >= 0)
@@ -496,12 +512,13 @@ void setup_use_data(int lineNo, String setupName, String setupValue)
     if (setupName.indexOf("P_ENC0_BTN") >= 0)
         setupGPIO.P_ENC0_BTN = setupValue.toInt();
     if (setupName.indexOf("P_ENC0_PWR") >= 0)
-        setupGPIO.P_ENC0_BTN = setupValue.toInt();
+        setupGPIO.P_ENC0_PWR = setupValue.toInt();
 
     if (setupName.indexOf("P_ADC_BAT") >= 0)
         setupGPIO.P_ADC_BAT = setupValue.toInt();
     if (setupName.indexOf("P_ADC_EN") >= 0)
         setupGPIO.P_ADC_EN = setupValue.toInt();
+*/
 
     if (setupName.indexOf("Volume") >= 0)
         au.radioCurrentVolume = setupValue.toInt();

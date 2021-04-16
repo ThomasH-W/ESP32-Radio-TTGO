@@ -43,9 +43,10 @@ unsigned long lastNtp = 0;
 
 #include <AceButton.h>
 using namespace ace_button;
-const int BUTTON1_PIN = 0;
-const int BUTTON2_PIN = 35;
-const int BUTTON3_PIN = 36; // 37;
+const int BUTTON1_PIN = PIN_BTN_1;
+const int BUTTON2_PIN = PIN_BTN_2;
+const int BUTTON3_PIN = PIN_BTN_3; // 37;
+
 AceButton button1(BUTTON1_PIN);
 AceButton button2(BUTTON2_PIN);
 AceButton button3(BUTTON3_PIN);
@@ -123,7 +124,7 @@ void handleEvent(AceButton *button, uint8_t eventType, uint8_t buttonState)
     {
       serial_printf("handleEvent> GUI for pin %d\n", butPressed);
       // audio_mode(AUDIO_MUTE);
-      if (mode==ST_GUI_1)
+      if (mode == ST_GUI_1)
         mode = ST_GUI_4;
       else
         mode = ST_GUI_1;
@@ -223,8 +224,8 @@ void displayLoop(void)
     case ST_GUI_3:                     // 4
       myDisplay1.Gui3(audio_data_ptr); // gauge left/right
       break;
-    case ST_GUI_4:                     // 4
-      myDisplay1.Gui4(wifi_data_ptr);  // gauge left/right
+    case ST_GUI_4:                    // 4
+      myDisplay1.Gui4(wifi_data_ptr); // gauge left/right
       break;
     }
     previousMillisDisplay = millis();
@@ -248,6 +249,7 @@ void setup()
 
   setup_button();
 
+  setup_gpio_pins(); // get default gpio pins
   setup_read_file(); // read setup
   readVoltage();     // must be done before wifi is established - conflict using ADC
 
