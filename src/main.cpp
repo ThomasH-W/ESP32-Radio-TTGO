@@ -41,6 +41,8 @@ wifi_data_struct wifiData;
 myNTP myNtp;
 unsigned long lastNtp = 0;
 
+#include "ble_ip_connector.h"
+
 #include <AceButton.h>
 using namespace ace_button;
 const int BUTTON1_PIN = PIN_BTN_1;
@@ -256,6 +258,9 @@ void setup()
   myDisplay1.print("> Firmware ");
   myDisplay1.println(FIRMWARE_VERSION);
   // myDisplay1.Gui0(); test gui using differrent fonts, files to be loaded into SPIFFS
+
+  myDisplay1.println("> setup ble ip connector ...");
+  setup_ble_ip_connector("ESP Radio");
 
   myDisplay1.println("> setup WiFi ...");
   setup_wifi(); // call wifimanager and establish mqtt connection

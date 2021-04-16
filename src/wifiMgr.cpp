@@ -22,6 +22,8 @@
 #include "LITTLEFS.h" //this needs to be first, or it all crashes and burns...
 #define FORMAT_LITTLEFS_IF_FAILED true
 
+#include "ble_ip_connector.h"
+
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
@@ -553,6 +555,7 @@ wifi_data_struct *setup_wifi_info()
 
     strncpy(wifi_data.IPChar, WiFi.localIP().toString().c_str(), 15);
     Serial.printf("wifi> IP address: %s\n", wifi_data.IPChar);
+    update_ble_ip_broadcast();
 
     pub_wifi_info();
     return &wifi_data;
@@ -692,6 +695,8 @@ void setup_wifi()
         serial_d_println(WiFi.gatewayIP());
         serial_d_printF("subnet  : ");
         serial_d_println(WiFi.subnetMask());
+
+        update_ble_ip_broadcast();
     }
 
     serial_d_printf("wifi::setup_wifi> mqtt_clientID  : %s (wm custom)\n", custom_mqtt_clientID.getValue());
