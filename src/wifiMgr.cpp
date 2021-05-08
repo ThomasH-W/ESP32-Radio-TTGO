@@ -35,15 +35,12 @@ AsyncWebSocketClient *globalClient = NULL;
 DNSServer dns;
 // AsyncWiFiManager wifiManager(&webServer, &dns);
 
-// tzapu WiFimanager
-// #include <WiFiManager.h>           // https://github.com/tzapu/WiFiManager
-// WiFiManager wm;                    // global wm instance
-// WiFiManagerParameter custom_field; // global param ( for non blocking w params )
-
 #include "Preferences.h"
 Preferences wifiPreferences; // create an instance of Preferences library
 void setup_wifi_preferences();
 void save_wifi_preferences();
+
+#include <AsyncElegantOTA.h>
 
 #include <MQTT.h>
 #define DEBUG true
@@ -482,6 +479,8 @@ void setup_webServer()
 
     ws.onEvent(onWsEvent);
     webServer.addHandler(&ws);
+
+    AsyncElegantOTA.begin(&webServer);
 
     webServer.begin();
     Serial.println("HTTP server started");
