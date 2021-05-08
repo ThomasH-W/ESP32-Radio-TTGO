@@ -1,6 +1,9 @@
 #ifndef _WIFI_MGR_FUNC_H
 #define _WIFI_MGR_FUNC_H
 
+#define OTA_USER "radio"
+#define OTA_PASS "update"
+
 void setup_wifi(void);
 void loop_wifi(void);
 void showVoltage(void);

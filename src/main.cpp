@@ -3,11 +3,11 @@
   Date : 26.03.2021 
 
   ESP32 Internet Radio with Display based on TTGO
+  https://github.com/ThomasH-W/ESP32-Radio-TTGO
 
   ToDo:
     ESP deepsleep, wakeup
-    Battery
-    show picture - loudspeaker
+    Battery monitoring
 */
 
 #include <Arduino.h>

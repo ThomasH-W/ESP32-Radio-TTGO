@@ -480,7 +480,8 @@ void setup_webServer()
     ws.onEvent(onWsEvent);
     webServer.addHandler(&ws);
 
-    AsyncElegantOTA.begin(&webServer);
+    AsyncElegantOTA.begin(&webServer, OTA_USER, OTA_PASS);
+    // AsyncElegantOTA.begin(&webServer); // no credentials required
 
     webServer.begin();
     Serial.println("HTTP server started");
