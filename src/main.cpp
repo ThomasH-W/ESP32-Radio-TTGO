@@ -46,10 +46,20 @@ using namespace ace_button;
 const int BUTTON1_PIN = PIN_BTN_1;
 const int BUTTON2_PIN = PIN_BTN_2;
 const int BUTTON3_PIN = PIN_BTN_3; // 37;
+const int BUTTON4_PIN = PIN_BTN_4; // 37;
+const int BUTTON5_PIN = PIN_BTN_5; // 37;
+const int BUTTON6_PIN = PIN_BTN_6; // 37;
+const int BUTTON7_PIN = PIN_BTN_7; // 37;
+const int BUTTON8_PIN = PIN_BTN_8; // 37;
 
 AceButton button1(BUTTON1_PIN);
 AceButton button2(BUTTON2_PIN);
 AceButton button3(BUTTON3_PIN);
+AceButton button4(BUTTON4_PIN);
+AceButton button5(BUTTON5_PIN);
+AceButton button6(BUTTON6_PIN);
+AceButton button7(BUTTON7_PIN);
+AceButton button8(BUTTON8_PIN);
 void handleEvent(AceButton *, uint8_t, uint8_t);
 const int LED_PIN = 2; // for ESP32
 
@@ -69,6 +79,11 @@ void setup_button()
   pinMode(BUTTON1_PIN, INPUT_PULLUP);
   pinMode(BUTTON2_PIN, INPUT_PULLUP);
   pinMode(BUTTON3_PIN, INPUT_PULLUP);
+  pinMode(BUTTON4_PIN, INPUT_PULLUP);
+  pinMode(BUTTON5_PIN, INPUT_PULLUP);
+  pinMode(BUTTON6_PIN, INPUT_PULLUP);
+  pinMode(BUTTON7_PIN, INPUT_PULLUP);
+  pinMode(BUTTON8_PIN, INPUT_PULLUP);
 
   // Configure the ButtonConfig with the event handler, and enable all higher
   // level events.
@@ -112,15 +127,28 @@ void handleEvent(AceButton *button, uint8_t eventType, uint8_t buttonState)
   // Control the LED only for the Pressed and Released events of Button 1.
   // Notice that if the MCU is rebooted while the button is pressed down, no
   // event is triggered and the LED remains off.
+  /*
+#define PIN_BTN_4 27 // preset+
+#define PIN_BTN_1 0  // preset+ - onboard button
+#define PIN_BTN_2 35 // mode - onboard button
+#define PIN_BTN_3 36 // mode
+#define PIN_BTN_5 37 // reset
+
+#define PIN_BTN_6 32 // volume +
+#define PIN_BTN_7 33 // volume -
+
+#define PIN_BTN_8 38 // preset -
+*/
+
   switch (eventType)
   {
-  case AceButton::kEventReleased: // kEventPressed
-    if (butPressed == BUTTON1_PIN)
+  case AceButton::kEventReleased:                               // kEventPressed
+    if (butPressed == BUTTON1_PIN || butPressed == BUTTON4_PIN) // preset+
     {
       serial_printf("handleEvent> preset_up for pin %d\n", butPressed);
       audio_mode(AUDIO_PRESET_UP);
     }
-    else if (butPressed == BUTTON2_PIN)
+    else if (butPressed == BUTTON2_PIN || butPressed == BUTTON3_PIN) // mode
     {
       serial_printf("handleEvent> GUI for pin %d\n", butPressed);
       // audio_mode(AUDIO_MUTE);
@@ -129,6 +157,27 @@ void handleEvent(AceButton *button, uint8_t eventType, uint8_t buttonState)
       else
         mode = ST_GUI_1;
       displayUpdate = true;
+    }
+    else if (butPressed == BUTTON5_PIN) // reset
+    {
+      serial_printf("handleEvent> RESET for pin %d\n", butPressed);
+      delay(10);
+      ESP.restart();
+    }
+    else if (butPressed == BUTTON6_PIN) // volume+
+    {
+      serial_printf("handleEvent> volume+ for pin %d\n", butPressed);
+      audio_mode(AUDIO_VOLUME_UP);
+    }
+    else if (butPressed == BUTTON7_PIN) // volume-
+    {
+      serial_printf("handleEvent> volume- for pin %d\n", butPressed);
+      audio_mode(AUDIO_VOLUME_DOWN);
+    }
+    else if (butPressed == BUTTON8_PIN) // volume-
+    {
+      serial_printf("handleEvent> preset- for pin %d\n", butPressed);
+      audio_mode(AUDIO_PRESET_DOWN);
     }
     break;
   default:
@@ -286,6 +335,12 @@ void loop()
 
   button1.check();
   button2.check();
+  button3.check();
+  button4.check();
+  button5.check();
+  button6.check();
+  button7.check();
+  button8.check();
 
   displayLoop();
   yield();

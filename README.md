@@ -88,6 +88,7 @@ The direction can be changed by swapping A + B.
 | P_ENC0_BTN  | Pin 15 |
 | P_ENC0_PWR  | Pin  2 |
 
+![GPIO](README/images/ESP_Radio_GPIO.jpg)
 
 ## Software 
 
