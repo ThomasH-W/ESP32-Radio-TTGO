@@ -746,7 +746,7 @@ char *urlencode(char *dst, char *src)
     return dst;
 }
 
-#include "HttpClient.h"
+#include "HTTPClient.h"
 String serverName = "http://musicbrainz.org/ws/2/release/?fmt=json&limit=1&query=release:";
 //                   http://musicbrainz.org/ws/2/release/?limit=1&query=release:Welshly%20Arms%20%20/%20Legendary
 //                   http://musicbrainz.org/ws/2/release/?fmt=json%26limit=1%26query=artist:Michael%20Patrick%20Kelly%20AND%20release:Beautiful%20Madness%20
