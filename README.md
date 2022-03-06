@@ -107,6 +107,9 @@ In addition NodeRED can be used to generate a simple a fast user interface.
 
 #### BINARY - Program Code
 
+Create Binary from program code and upload
+- Build
+- Upload
 ![PIO-Upload](README/images/ESP_Radio_PlatformIO_BIN_1.jpg)
 
 ### DATA - Filesystem
@@ -144,7 +147,9 @@ File: PlatformIO\Projects\TTGO-Radio\.pio\libdeps\esp32doit-devkit-v1\TFT_eSPI\U
 Maintain your favorite radio stations (see above) in data/setup.ini
 
 #### Build Filesystem and Upload Filesystem Image
-Open the PlatformIO Menu on the top left and perform both steps.
+Open the PlatformIO Menu on the top left and perform both steps: 
+- Build Filesystem Image
+- Upload Filesystem Image
 Note: you may need to unplug/plugin your ESP to upload the image
 
-![PIO-Upload](README/images/ESP_Radio_PlatformIO_FS_1.jpg)
+![PIO-Upload](README/images/ESP_Radio_PlatformIO_FS_2.jpg)
