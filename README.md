@@ -92,11 +92,20 @@ The direction can be changed by swapping A + B.
 
 ## Software 
 
+To install the software you need to create the binary and uplad the content of the data folder.
+
+
 ### WiFi Manager
 
 
 
 # PlatformIO
+
+## BINARY - Program Code
+
+![PIO-Upload](README/images/ESP_Radio_PlatformIO_BIN_1.jpg)
+
+## DATA - Filesystem
 
 ### LittleFS
 
