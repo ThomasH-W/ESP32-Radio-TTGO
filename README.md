@@ -94,22 +94,20 @@ The direction can be changed by swapping A + B.
 
 To install the software you need to create the binary and uplad the content of the data folder.
 
-
-### WiFi Manager
-
 ### MQTT
-MQTT is optional. If you do not have an MQTT broker installed you can ignore al settings.
-The redio will still work if the MQTT broker canot be reached.
+MQTT is optional. If you do not have an MQTT broker installed you can ignore all settings.
+The radio will still work if the MQTT broker cannot be reached.
 MQTT is used to provide a generic interface for e.g. home automation.
-In addition NodeRED can be used to generate a simple a fast user interface.
+In addition NodeRED can be used to generate a simple user interface.
 
 ### PlatformIO
 
 #### BINARY - Program Code
 
-Create Binary from program code and upload
+Create the binary from program code and upload
 - Build
 - Upload
+
 ![PIO-Upload](README/images/ESP_Radio_PlatformIO_BIN_1.jpg)
 
 ### DATA - Filesystem
