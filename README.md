@@ -97,49 +97,53 @@ To install the software you need to create the binary and uplad the content of t
 
 ### WiFi Manager
 
+### MQTT
+MQTT is optional. If you do not have an MQTT broker installed you can ignore al settings.
+The redio will still work if the MQTT broker canot be reached.
+MQTT is used to provide a generic interface for e.g. home automation.
+In addition NodeRED can be used to generate a simple a fast user interface.
 
+### PlatformIO
 
-# PlatformIO
-
-## BINARY - Program Code
+#### BINARY - Program Code
 
 ![PIO-Upload](README/images/ESP_Radio_PlatformIO_BIN_1.jpg)
 
-## DATA - Filesystem
+### DATA - Filesystem
 
-### LittleFS
+#### LittleFS
 
 The build in upload tool for ESP32 does not work for littleFS. Two files are used to overcome this:
 - littlefsbuilder.py
 - mklittlefs.exe
 
-#### platformio.ini
+##### platformio.ini
 - board_build.filesystem = littlefs
 - extra_scripts = ./littlefsbuilder.py
 
-### TFT_eSPI
+#### TFT_eSPI
 
 Either copy the user files files or manual adjust as shown below.
 - source: README\TFT_eSPI 
 - target: PlatformIO\Projects\TTGO-Radio\.pio\libdeps\esp32doit-devkit-v1\TFT_eSPI
 
-#### User_Setup.h
+##### User_Setup.h
 File: PlatformIO\Projects\TTGO-Radio\.pio\libdeps\esp32doit-devkit-v1\TFT_eSPI\User_Setup.h
 <br> Comment the default with “//” and use ST7789 ,i.e. remove the comment signs “//”
 
 - // #define ILI9341_DRIVER
 - #define ST7789_DRIVER      // Full configuration option, define additional parameters below for this display
 
-#### User_Setup_Select.h
+##### User_Setup_Select.h
 File: PlatformIO\Projects\TTGO-Radio\.pio\libdeps\esp32doit-devkit-v1\TFT_eSPI\User_Setup_Select.h
 
 - // #include <User_Setup.h>
 - #include <User_Setups/Setup25_TTGO_T_Display.h>    // Setup file for ESP32 and TTGO T-Display ST7789V SPI bus TFT
 
-### setup.ini
+#### setup.ini
 Maintain your favorite radio stations (see above) in data/setup.ini
 
-### Build Filesystem and Upload Filesystem Image
+#### Build Filesystem and Upload Filesystem Image
 Open the PlatformIO Menu on the top left and perform both steps.
 Note: you may need to unplug/plugin your ESP to upload the image
 
