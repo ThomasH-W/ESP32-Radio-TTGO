@@ -4,7 +4,7 @@
 #ifndef MAIN_h
 #define MAIN_h
 
-#define FIRMWARE_VERSION "0.8.1"
+#define FIRMWARE_VERSION "0.9.1"
 
 #include "Arduino.h"
 #include "FS.h"
@@ -98,5 +98,8 @@ void audio_mode(int mode);
 void audio_mode(int mode, int value);
 void audio_ws_meta(void);
 void audio_ws_tuner(void);
+
+bool setup_read_file();
+
 
 #endif

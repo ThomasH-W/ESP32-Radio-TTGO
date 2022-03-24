@@ -1,6 +1,6 @@
 /*
   File : main.cpp
-  Date : 26.03.2021 
+  Date : 26.03.2021
 
   ESP32 Internet Radio with Display based on TTGO
   https://github.com/ThomasH-W/ESP32-Radio-TTGO
@@ -25,7 +25,6 @@
 #define LED_OFF LOW
 
 #include "wifiMgr.h"
-void setup_read_file();
 void loop_audio();
 void setup_rotary();
 void loop_rotary();
@@ -190,9 +189,9 @@ void handleEvent(AceButton *button, uint8_t eventType, uint8_t buttonState)
 void main_displayUpdate(bool clearScreen)
 {
   if (audio_data_ptr)                                                       // pointer is initialized after display setup
-    serial_printf("main::main_displayUpdate %d\n", audio_data_ptr->update); //audio_data_ptr->update
+    serial_printf("main::main_displayUpdate %d\n", audio_data_ptr->update); // audio_data_ptr->update
   else
-    serial_printf("main::main_displayUpdate\n"); //audio_data_ptr->update
+    serial_printf("main::main_displayUpdate\n"); // audio_data_ptr->update
   displayUpdate = true;
   if (clearScreen)
     displayReset();
@@ -294,16 +293,25 @@ void setup()
 
   myDisplay1.begin(); // start display
   delay(10);
-  myDisplay1.println("> Boot ...");
+  myDisplay1.println("> Boot TTGO-Radio ...");
 
   setup_button();
-
   setup_gpio_pins(); // get default gpio pins
-  setup_read_file(); // read setup
-  readVoltage();     // must be done before wifi is established - conflict using ADC
 
   myDisplay1.print("> Firmware ");
   myDisplay1.println(FIRMWARE_VERSION);
+
+  bool func_success = setup_read_file(); // read config file setup.ini from littleFS and pass every line to parser
+  if (func_success == false)
+  {
+    myDisplay1.println("> PANIC: setup.ini not found");
+    myDisplay1.println("> Build and upload filesystem");
+    myDisplay1.println("> System halted");
+    while (true)
+      ; // loop forever
+  }
+
+  readVoltage(); // must be done before wifi is established - conflict using ADC
   // myDisplay1.Gui0(); test gui using differrent fonts, files to be loaded into SPIFFS
 
   myDisplay1.println("> setup WiFi ...");

@@ -1,10 +1,10 @@
 /*
   File : audio.cpp
-  Date : 26.03.2021 
+  Date : 26.03.2021
 
   Based on https://github.com/schreibfaul1/ESP32-audioI2S
 
-lib_deps = 
+lib_deps =
     https://github.com/schreibfaul1/ESP32-audioI2S
 
 */
@@ -41,6 +41,8 @@ audio_data_struct au; // audio data structure
 
 unsigned long currentMillisAudioLoop = 0, previousMillisRotary = 0, intervalRotaryLoop = 3000;
 unsigned long previousPreSelectMillis = 0, intervalPreSelectLoop = 3000;
+unsigned long previousTitleUpdateMillis = 0, intervalTitleUpdatePanic = 10 * 60 * 1000; // 10 minutes
+
 //-----------------------------------------------------------------------------------------
 // when rotary encoder button is pressed, toggle mode
 // a) change volume
@@ -316,20 +318,20 @@ void station_select(int stationID)
 } // end of function
 
 /**
-   * Takes commands via Websocket in the form of <command>[=<argument>]:
-   *    x playstate=
-   *        x mute | pause -> playback paused
-   *        x unmute | play -> playback playing
-   *    x volume=<integer_value> -> Loudness to play
-   *    x station_select=<station_id> -> 1 indexed station to select from ini
-   *    < station_update -> Refresh Station List
-   *    < meta_playing=<artist>@<title> -> Metadata for currently playing track
-   *
-   * Legend:
-   *    < -> Incoming ESP to Website
-   *    > -> Outgoing Website to ESP
-   *    x -> Bidirectional ESP to Website and Website to ESP
-   */
+ * Takes commands via Websocket in the form of <command>[=<argument>]:
+ *    x playstate=
+ *        x mute | pause -> playback paused
+ *        x unmute | play -> playback playing
+ *    x volume=<integer_value> -> Loudness to play
+ *    x station_select=<station_id> -> 1 indexed station to select from ini
+ *    < station_update -> Refresh Station List
+ *    < meta_playing=<artist>@<title> -> Metadata for currently playing track
+ *
+ * Legend:
+ *    < -> Incoming ESP to Website
+ *    > -> Outgoing Website to ESP
+ *    x -> Bidirectional ESP to Website and Website to ESP
+ */
 
 //-----------------------------------------------------------------------------------------
 void audio_ws_tuner()
@@ -357,14 +359,20 @@ void audio_info(const char *info)
         // Serial.println(au.radioBitRate);
         mqtt_pub_tele("Bitrate", au.radioBitRate);
     }
+    /*
+    uint32_t actTime = audio.getAudioCurrentTime();
+    sprintf(buf, "%d", actTime);
+    mqtt_pub_tele("Curtime", buf);
+    Serial.println("CurTime %s",buf);
+    */
 }
 void audio_id3data(const char *info)
-{ //id3 metadata
+{ // id3 metadata
     Serial.print("id3data     ");
     Serial.println(info);
 }
 void audio_eof_mp3(const char *info)
-{ //end of file
+{ // end of file
     Serial.print("eof_mp3     ");
     Serial.println(info);
 }
@@ -376,6 +384,8 @@ void audio_showstation(const char *info)
 }
 void audio_showstreamtitle(const char *info)
 {
+    previousTitleUpdateMillis = millis();
+
     Serial.print("streamtitle ");
     Serial.println(info);
 
@@ -434,17 +444,17 @@ void audio_bitrate(const char *info)
     mqtt_pub_tele("Bitrate", buf);
 }
 void audio_commercial(const char *info)
-{ //duration in sec
+{ // duration in sec
     Serial.print("commercial  ");
     Serial.println(info);
 }
 void audio_icyurl(const char *info)
-{ //homepage
+{ // homepage
     Serial.print("icyurl      ");
     Serial.println(info);
 }
 void audio_lasthost(const char *info)
-{ //stream URL played
+{ // stream URL played
     Serial.print("lasthost    ");
     Serial.println(info);
 }
@@ -579,7 +589,7 @@ void setup_read_line(int lineNo, const char *str)
         return;
     }
     // setupName.toLowerCase(); // Force to lower case
-    //value = chomp ( val ) ;                             // Get the specified value
+    // value = chomp ( val ) ;                             // Get the specified value
     setupValue = value;
     if ((inx = setupValue.indexOf("#")) >= 0) // Comment line or partial comment?
     {
@@ -677,10 +687,16 @@ bool setup_read_file()
 
     if (!LITTLEFS.exists(setupFileName2)) // setup.ini  vorchanden?
     {
+        serial_d_print("ERR setup_read_file> ");
+        serial_d_print(setupFileName2);
+        serial_d_print(" not found\n");
+        return false; // setup file missing
+        /*
         serial_d_printf("setup_read_file> %s not found, create one\n", setupFileName2);
         File DataFile = LITTLEFS.open(setupFileName2, "w"); // wenn nicht dann Anlegen
         DataFile.println("#INI neu angelegt bitte editieren");
         DataFile.close();
+        */
     }
     // LITTLEFS.open(setupFileName, "r");
     inifile = LITTLEFS.open(setupFileName2, "r"); // WiFiManager INI-Datei offnen
@@ -790,12 +806,19 @@ void loop_audio()
         if (!au.radioRotaryVolume)
         {
             Serial.printf("audio::loop_audio> au.radioRotaryVolume %o (req:%o)\n", au.radioRotaryVolume, true);
-            //au.radioRotaryVolume = true;
-            //Serial.printf(" -> %o", au.radioRotaryVolume);
+            // au.radioRotaryVolume = true;
+            // Serial.printf(" -> %o", au.radioRotaryVolume);
             rotary_onButtonClick();
-            //Serial.printf(" -> %o\n", au.radioRotaryVolume);
+            // Serial.printf(" -> %o\n", au.radioRotaryVolume);
             station_apply_preselect();
         }
         previousMillisRotary = millis();
     }
+
+    if (currentMillisAudioLoop - previousTitleUpdateMillis > intervalTitleUpdatePanic)
+    { // after Title has not been updated for some time, assume that connection broken down
+      // Serial.printf("audio::loop_audio> Title update timeout exceeded %d min\n", intervalTitleUpdatePanic / 1000 /60);
+      // ESP.restart();
+    }
+
 } // end of function
