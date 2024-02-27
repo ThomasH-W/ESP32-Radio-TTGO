@@ -4,11 +4,11 @@
 #ifndef MAIN_h
 #define MAIN_h
 
-#define FIRMWARE_VERSION "0.9.1"
+#define FIRMWARE_VERSION "1.1.1"
 
 #include "Arduino.h"
 #include "FS.h"
-#include "LITTLEFS.h" //this needs to be first, or it all crashes and burns...
+#include "LittleFS.h" //this needs to be first, or it all crashes and burns...
 #define FORMAT_LITTLEFS_IF_FAILED true
 #define FlashFS LittleFS
 

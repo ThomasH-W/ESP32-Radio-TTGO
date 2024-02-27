@@ -1,18 +1,19 @@
 /*
   File : FS_tools.cpp
-  Date : 26.03.2021 
+  Date : 26.02.2024 - update for LittleFS
 
   various function to deal with filesystem
 */
 #include <Arduino.h>
 #include "FS.h"
-#include <LITTLEFS.h>
+// #include <LittleFS.h>
+#include <LittleFS.h> // 2024 udpate
 
-/* You only need to format LITTLEFS the first time you run a
-   test or else use the LITTLEFS plugin to create a partition
-   https://github.com/lorol/arduino-esp32littlefs-plugin */
+/* You only need to format LittleFS the first time you run a
+   test or else use the LittleFS plugin to create a partition
+   https://github.com/lorol/arduino-esp32LittleFS-plugin */
 
-#define FORMAT_LITTLEFS_IF_FAILED true
+#define FORMAT_LittleFS_IF_FAILED true
 
     void listDir(fs::FS &fs, const char *dirname, uint8_t levels)
 {
@@ -174,7 +175,7 @@ void deleteFile(fs::FS &fs, const char *path)
     }
 }
 
-// SPIFFS-like write and delete file, better use #define CONFIG_LITTLEFS_SPIFFS_COMPAT 1
+// SPIFFS-like write and delete file, better use #define CONFIG_LittleFS_SPIFFS_COMPAT 1
 
 void writeFile2(fs::FS &fs, const char *path, const char *message)
 {
@@ -314,36 +315,36 @@ void testFileIO(fs::FS &fs, const char *path)
 
 void test_FS()
 {
-    if (!LITTLEFS.begin(FORMAT_LITTLEFS_IF_FAILED))
+    if (!LittleFS.begin(FORMAT_LittleFS_IF_FAILED))
     {
-        Serial.println("LITTLEFS Mount Failed");
+        Serial.println("LittleFS Mount Failed");
         return;
     }
 
-    listDir(LITTLEFS, "/", 0);
-    createDir(LITTLEFS, "/mydir");
-    writeFile(LITTLEFS, "/mydir/hello2.txt", "Hello2");
-    //writeFile(LITTLEFS, "/mydir/newdir2/newdir3/hello3.txt", "Hello3");
-    writeFile2(LITTLEFS, "/mydir/newdir2/newdir3/hello3.txt", "Hello3");
-    listDir(LITTLEFS, "/", 3);
-    deleteFile(LITTLEFS, "/mydir/hello2.txt");
-    //deleteFile(LITTLEFS, "/mydir/newdir2/newdir3/hello3.txt");
-    deleteFile2(LITTLEFS, "/mydir/newdir2/newdir3/hello3.txt");
-    removeDir(LITTLEFS, "/mydir");
-    listDir(LITTLEFS, "/", 3);
-    writeFile(LITTLEFS, "/hello.txt", "Hello ");
-    appendFile(LITTLEFS, "/hello.txt", "World!\r\n");
-    readFile(LITTLEFS, "/hello.txt");
-    renameFile(LITTLEFS, "/hello.txt", "/foo.txt");
-    readFile(LITTLEFS, "/foo.txt");
-    deleteFile(LITTLEFS, "/foo.txt");
-    testFileIO(LITTLEFS, "/test.txt");
-    deleteFile(LITTLEFS, "/test.txt");
+    listDir(LittleFS, "/", 0);
+    createDir(LittleFS, "/mydir");
+    writeFile(LittleFS, "/mydir/hello2.txt", "Hello2");
+    //writeFile(LittleFS, "/mydir/newdir2/newdir3/hello3.txt", "Hello3");
+    writeFile2(LittleFS, "/mydir/newdir2/newdir3/hello3.txt", "Hello3");
+    listDir(LittleFS, "/", 3);
+    deleteFile(LittleFS, "/mydir/hello2.txt");
+    //deleteFile(LittleFS, "/mydir/newdir2/newdir3/hello3.txt");
+    deleteFile2(LittleFS, "/mydir/newdir2/newdir3/hello3.txt");
+    removeDir(LittleFS, "/mydir");
+    listDir(LittleFS, "/", 3);
+    writeFile(LittleFS, "/hello.txt", "Hello ");
+    appendFile(LittleFS, "/hello.txt", "World!\r\n");
+    readFile(LittleFS, "/hello.txt");
+    renameFile(LittleFS, "/hello.txt", "/foo.txt");
+    readFile(LittleFS, "/foo.txt");
+    deleteFile(LittleFS, "/foo.txt");
+    testFileIO(LittleFS, "/test.txt");
+    deleteFile(LittleFS, "/test.txt");
 
     Serial.println("Test complete");
 }
 
 void list_FS()
 {
-    listDir(LITTLEFS, "/", 0);
+    listDir(LittleFS, "/", 0);
 }

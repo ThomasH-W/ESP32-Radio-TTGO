@@ -1,6 +1,6 @@
 /*
   File : myDisplay.cpp
-  Date : 26.03.2021 
+  Date : 26.02.2024 - update for LittleFS
 
   handler for display
 
@@ -129,11 +129,11 @@ void myDisplay::wfiSignal(int my_x, int my_y, int my_max, int level) // 100,100,
 // ------------------------------------------------------------------------------------------------------------------------
 void myDisplay::myFont1(String fontname)
 {
-    if (LITTLEFS.begin(FORMAT_LITTLEFS_IF_FAILED))
+    if (LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED))
     {
         Serial.print("file system mounted\n");
         myTFT.fillScreen(TFT_BLACK);
-        myTFT.loadFont(fontname, LITTLEFS);
+        myTFT.loadFont(fontname, LittleFS);
         for (size_t i = 1; i <= 6; i++)
         {
             myTFT.setTextSize(i); // change la taille

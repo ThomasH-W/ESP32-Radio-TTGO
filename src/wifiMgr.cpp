@@ -1,6 +1,6 @@
 /*
 *  File : wiFiMgr.cpp
-*  Date : 26.03.2021 
+*  Date : 26.02.2024 - update for LittleFS
 *
 *   Wifi Modul based on WifiManager by tzapu
 *   MQTT added
@@ -19,11 +19,20 @@
 #endif
 
 #include "FS.h"
-#include "LITTLEFS.h" //this needs to be first, or it all crashes and burns...
-#define FORMAT_LITTLEFS_IF_FAILED true
+#include "LittleFS.h" //this needs to be first, or it all crashes and burns...
+#define FORMAT_LittleFS_IF_FAILED true
+
+#include <ESPAsyncWiFiManager.h> //https://github.com/tzapu/WiFiManager + https://github.com/alanswx/ESPAsyncWiFiManager
+DNSServer dns;
+// AsyncWiFiManager wifiManager(&webServer, &dns);
+
+// #define WEBSERVER_H
+#include <AsyncElegantOTA.h>
+
 
 #include <WiFi.h>
 #include <AsyncTCP.h>
+
 #include <ESPAsyncWebServer.h>
 AsyncWebServer webServer(80);
 AsyncWebSocket ws("/");
@@ -31,16 +40,12 @@ AsyncWebSocketClient *globalClient = NULL;
 
 // #include <ArduinoJson.h> // https://github.com/bblanchon/ArduinoJson
 
-#include <ESPAsyncWiFiManager.h> //https://github.com/tzapu/WiFiManager
-DNSServer dns;
-// AsyncWiFiManager wifiManager(&webServer, &dns);
 
 #include "Preferences.h"
 Preferences wifiPreferences; // create an instance of Preferences library
 void setup_wifi_preferences();
 void save_wifi_preferences();
 
-#include <AsyncElegantOTA.h>
 
 #include <MQTT.h>
 #define DEBUG true
@@ -241,16 +246,16 @@ bool loadFromSPIFFS(AsyncWebServerRequest *request, String path)
 
     Serial.print("loadFromSPIFFS> Requested page -> ");
     Serial.println(path);
-    if (LITTLEFS.exists(path))
+    if (LittleFS.exists(path))
     {
-        File dataFile = LITTLEFS.open(path, "r");
+        File dataFile = LittleFS.open(path, "r");
         if (!dataFile)
         {
             handleNotFound(request);
             return false;
         }
 
-        AsyncWebServerResponse *response = request->beginResponse(LITTLEFS, path, dataType);
+        AsyncWebServerResponse *response = request->beginResponse(LittleFS, path, dataType);
         Serial.print("Real file path: ");
         Serial.println(path);
 
@@ -271,9 +276,9 @@ bool saveToSPIFFS(char *path, const String data)
 {
     Serial.printf("saveToSPIFFS> write to file %s ", path);
 
-    if (LITTLEFS.exists(path))
+    if (LittleFS.exists(path))
     {
-        File dataFile = LITTLEFS.open(path, "w");
+        File dataFile = LittleFS.open(path, "w");
         if (!dataFile)
         {
             Serial.printf("\nERR saveToSPIFFS> file %s could not be opened for w", path);
@@ -457,7 +462,7 @@ void handleRadioConfig(AsyncWebServerRequest *request)
 void setup_webServer()
 {
     Serial.print(F("setup_webServer> Inizializing FS..."));
-    if (LITTLEFS.begin())
+    if (LittleFS.begin())
     {
         Serial.println(F("done."));
     }
@@ -474,13 +479,14 @@ void setup_webServer()
         request->send(200, "text/plain", "this works as well");
     });
 
-    webServer.serveStatic("/", LITTLEFS, "/").setDefaultFile("index.html");
+    webServer.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
     webServer.onNotFound(handleNotFound);
 
     ws.onEvent(onWsEvent);
     webServer.addHandler(&ws);
 
-    AsyncElegantOTA.begin(&webServer, OTA_USER, OTA_PASS);
+    // AsyncElegantOTA.setAuth(OTA_USER, OTA_PASS);
+    AsyncElegantOTA.begin(&webServer,OTA_USER, OTA_PASS);
     // AsyncElegantOTA.begin(&webServer); // no credentials required
 
     webServer.begin();

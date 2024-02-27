@@ -1,6 +1,6 @@
 /*
   File : audio.cpp
-  Date : 26.03.2021
+  Date : 26.02.2024 - update for LittleFS
 
   Based on https://github.com/schreibfaul1/ESP32-audioI2S
 
@@ -23,7 +23,7 @@ void setup_audio_preferences();
 void save_audio_preferences();
 
 #include "FS.h"
-#include "LITTLEFS.h" //this needs to be first, or it all crashes and burns...
+#include "LittleFS.h" //this needs to be first, or it all crashes and burns...
 
 SetupGPIO setupGPIO;
 #define MAX_RADIO_STATIONS 10
@@ -637,7 +637,7 @@ void listDir2(fs::FS &fs, const char *dirname, uint8_t levels)
         {
             Serial.print("  DIR : ");
 
-#ifdef CONFIG_LITTLEFS_FOR_IDF_3_2
+#ifdef CONFIG_LittleFS_FOR_IDF_3_2
             Serial.println(file.name());
 #else
             Serial.print(file.name());
@@ -657,7 +657,7 @@ void listDir2(fs::FS &fs, const char *dirname, uint8_t levels)
             Serial.print(file.name());
             Serial.print("  SIZE: ");
 
-#ifdef CONFIG_LITTLEFS_FOR_IDF_3_2
+#ifdef CONFIG_LittleFS_FOR_IDF_3_2
             Serial.println(file.size());
 #else
             Serial.print(file.size());
@@ -671,21 +671,21 @@ void listDir2(fs::FS &fs, const char *dirname, uint8_t levels)
 }
 
 // -----------------------------------------------------------------------------------------------
-// read config file setup.ini from littleFS and pass every line to parser
+// read config file setup.ini from LittleFS and pass every line to parser
 bool setup_read_file()
 {
     String line;  // Zeile von .ini Datei
     File inifile; // Datei
 
-    if (!LITTLEFS.begin(true)) // LITTLEFS Starten
+    if (!LittleFS.begin(true)) // LittleFS Starten
     {
         serial_d_printF("ERR setup_read_file> Filesystem could not be mounted\n");
         return false; // Partition missing
     }
 
-    listDir2(LITTLEFS, "/", 0); // Lists the files so you can see what is in the SPIFFS
+    listDir2(LittleFS, "/", 0); // Lists the files so you can see what is in the SPIFFS
 
-    if (!LITTLEFS.exists(setupFileName2)) // setup.ini  vorchanden?
+    if (!LittleFS.exists(setupFileName2)) // setup.ini  vorchanden?
     {
         serial_d_print("ERR setup_read_file> ");
         serial_d_print(setupFileName2);
@@ -693,13 +693,13 @@ bool setup_read_file()
         return false; // setup file missing
         /*
         serial_d_printf("setup_read_file> %s not found, create one\n", setupFileName2);
-        File DataFile = LITTLEFS.open(setupFileName2, "w"); // wenn nicht dann Anlegen
+        File DataFile = LittleFS.open(setupFileName2, "w"); // wenn nicht dann Anlegen
         DataFile.println("#INI neu angelegt bitte editieren");
         DataFile.close();
         */
     }
-    // LITTLEFS.open(setupFileName, "r");
-    inifile = LITTLEFS.open(setupFileName2, "r"); // WiFiManager INI-Datei offnen
+    // LittleFS.open(setupFileName, "r");
+    inifile = LittleFS.open(setupFileName2, "r"); // WiFiManager INI-Datei offnen
     serial_d_printf("setup_read_file> reading %s\n", setupFileName2);
     int i = 0;
     while (inifile.available())
