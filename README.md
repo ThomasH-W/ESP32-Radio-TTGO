@@ -116,7 +116,7 @@ Create the binary from program code and upload
 
 The build in upload tool for ESP32 does not work for littleFS. Two files are used to overcome this:
 - littlefsbuilder.py
-- mklittlefs.exe
+- mklittlefs.exe (Windows) re mklittlefs (MacOS)
 
 ##### platformio.ini
 - board_build.filesystem = littlefs
@@ -124,7 +124,7 @@ The build in upload tool for ESP32 does not work for littleFS. Two files are use
 
 #### TFT_eSPI
 
-Either copy the user files files or manual adjust as shown below.
+Either copy the user files "User_Setup*" files or manual adjust as shown below.
 - source: README\TFT_eSPI 
 - target: PlatformIO\Projects\TTGO-Radio\.pio\libdeps\esp32doit-devkit-v1\TFT_eSPI
 
@@ -151,3 +151,10 @@ Open the PlatformIO Menu on the top left and perform both steps:
 Note: you may need to unplug/plugin your ESP to upload the image
 
 ![PIO-Upload](README/images/ESP_Radio_PlatformIO_FS_2.jpg)
+
+## Setup
+
+Once binary is uploaded to the ESP32 you need to power off/on.
+After power on, device will create an access point.
+Connect with your smartphone and select your WiFi network as well as settgin a device name.
+Device will reboot and immediately connect to the first radio station.
