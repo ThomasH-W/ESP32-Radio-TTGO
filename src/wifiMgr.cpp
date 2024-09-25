@@ -27,7 +27,7 @@ DNSServer dns;
 // AsyncWiFiManager wifiManager(&webServer, &dns);
 
 // #define WEBSERVER_H
-#include <AsyncElegantOTA.h>
+#include <ElegantOTA.h>
 
 
 #include <WiFi.h>
@@ -339,8 +339,8 @@ https://techtutorialsx.com/2018/09/13/esp32-arduino-web-server-receiving-data-fr
 void wsSendTuner(int presetNo, int volume)
 {
     Serial.printf("wifi::wsSendTuner> Preset %d , Volume %d\n", presetNo, volume);
-    ws.printfAll_P("station_select=%d", presetNo);
-    ws.printfAll_P("volume=%d", volume);
+    ws.printfAll("station_select=%d", presetNo);
+    ws.printfAll("volume=%d", volume);
 }
 
 // --------------------------------------------------------------------------
@@ -351,11 +351,11 @@ void wsSendArtistTitle(char *Artist, char *SongTitle)
 
     if (strLen)
     {
-        ws.printfAll_P("meta_playing=%s@%s", Artist, SongTitle);
+        ws.printfAll("meta_playing=%s@%s", Artist, SongTitle);
         getCoverBMID(Artist, SongTitle);
     }
     else
-        ws.printfAll_P("meta_playing=@");
+        ws.printfAll("meta_playing=@");
 }
 
 // --------------------------------------------------------------------------
@@ -438,8 +438,9 @@ void handleConfig(AsyncWebServerRequest *request)
 void handleRadioConfig(AsyncWebServerRequest *request)
 {
     // int params = request->params();
-    request->params();
-    AsyncWebParameter *p = request->getParam(0);
+    int params = request->params();
+    int i=0;
+    const AsyncWebParameter* p = request->getParam(i); // get first parameter
     if (p->isPost())
     {
         // Serial.printf("_POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
@@ -486,7 +487,7 @@ void setup_webServer()
     webServer.addHandler(&ws);
 
     // AsyncElegantOTA.setAuth(OTA_USER, OTA_PASS);
-    AsyncElegantOTA.begin(&webServer,OTA_USER, OTA_PASS);
+    ElegantOTA.begin(&webServer,OTA_USER, OTA_PASS);
     // AsyncElegantOTA.begin(&webServer); // no credentials required
 
     webServer.begin();
