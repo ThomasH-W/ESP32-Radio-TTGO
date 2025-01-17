@@ -112,15 +112,16 @@ Create the binary from program code and upload
 
 ### DATA - Filesystem
 
+All files located in directory data need to be uploaded.
+Please follow the guideline below:
+  https://randomnerdtutorials.com/esp8266-nodemcu-vs-code-platformio-littlefs/ 
+
 #### LittleFS
 
-The build in upload tool for ESP32 does not work for littleFS. Two files are used to overcome this:
-- littlefsbuilder.py
-- mklittlefs.exe (Windows) re mklittlefs (MacOS)
+LittleFS is now part of the core system. No addtional tools are required anymore to perform the upload.
 
 ##### platformio.ini
 - board_build.filesystem = littlefs
-- extra_scripts = ./littlefsbuilder.py
 
 #### TFT_eSPI
 
