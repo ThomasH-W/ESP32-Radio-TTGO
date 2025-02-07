@@ -1,6 +1,7 @@
 #ifndef _WIFI_MGR_FUNC_H
 #define _WIFI_MGR_FUNC_H
 
+// url will be [ip-address]/update
 #define OTA_USER "radio"
 #define OTA_PASS "update"
 

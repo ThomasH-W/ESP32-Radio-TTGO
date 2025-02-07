@@ -27,6 +27,7 @@ DNSServer dns;
 // AsyncWiFiManager wifiManager(&webServer, &dns);
 
 // #define WEBSERVER_H
+// url will be [ip-address]/update
 #include <ElegantOTA.h>
 
 
