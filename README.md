@@ -1,3 +1,7 @@
+# New version
+https://github.com/ThomasH-W/Lilygo_T-Display_S3_Radio.git
+The new version is now supporting Arduino 3.x
+
 # ESP32-Radio-TTGO
 ESP32 Internet Radio with Display 
 
